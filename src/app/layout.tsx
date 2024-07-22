@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark overflow-x-hidden">
+    <html lang="en" className="dark overflow-x-hidden scrollbar-hide">
       <body className={inter.className}><Providers>{children}</Providers></body>
     </html>
   );
