@@ -9,12 +9,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-const SignupForm: React.FC = () => {
+const LoginForm: React.FC = () => {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [firstName, setFirstName] = useState<string>("");
-  const [lastName, setLastName] = useState<string>("");
   const [error, setError] = useState<string>("");
 
   const handleSubmit = async (e: FormEvent) => {
@@ -22,7 +20,7 @@ const SignupForm: React.FC = () => {
     setError("");
 
     try {
-      const response = await fetch('/api/user/auth/register', {
+      const response = await fetch('/api/user/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,23 +28,21 @@ const SignupForm: React.FC = () => {
         body: JSON.stringify({
           email,
           password,
-          firstName,
-          lastName,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Registration failed');
+        throw new Error(errorData.message || 'Login failed');
       }
 
       const data = await response.json();
-      console.log("Registration successful", data);
+      console.log("Login successful", data);
       
       // Redirect to home page
       router.push('/');
     } catch (error: any) {
-      console.error("Registration error:", error);
+      console.error("Login error:", error);
       setError(error.message);
     }
   };
@@ -55,10 +51,10 @@ const SignupForm: React.FC = () => {
     <div className="h-screen w-screen flex items-center justify-center container p-10">
       <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black">
         <h2 className="font-bold text-2xl text-neutral-800 dark:text-neutral-200">
-          Welcome to Kalendar
+          Welcome Back to Kalendar
         </h2>
         <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300">
-          Start optimizing your daily routine with AI-powered insights
+          Log in to continue optimizing your daily routine with AI-powered insights
         </p>
 
         {error && (
@@ -66,30 +62,6 @@ const SignupForm: React.FC = () => {
         )}
 
         <form className="my-8" onSubmit={handleSubmit}>
-          <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
-            <LabelInputContainer>
-              <Label htmlFor="firstname">First name</Label>
-              <Input
-                id="firstname"
-                placeholder="Tyler"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-              />
-            </LabelInputContainer>
-            <LabelInputContainer>
-              <Label htmlFor="lastname">Last name</Label>
-              <Input
-                id="lastname"
-                placeholder="Durden"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-              />
-            </LabelInputContainer>
-          </div>
           <LabelInputContainer className="mb-4">
             <Label htmlFor="email">Email Address</Label>
             <Input
@@ -117,7 +89,7 @@ const SignupForm: React.FC = () => {
             className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
             type="submit"
           >
-            Sign up &rarr;
+            Log in &rarr;
             <BottomGradient />
           </button>
         </form>
@@ -173,4 +145,4 @@ const LabelInputContainer: React.FC<{
   );
 };
 
-export default SignupForm;
+export default LoginForm;
