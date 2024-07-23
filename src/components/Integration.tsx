@@ -36,7 +36,7 @@ export function Integration() {
 
   return (
     <div
-      className="relative flex h-[500px] w-full items-center justify-center overflow-hidden rounded-lg p-10 md:shadow-xl"
+      className="relative flex h-[500px] w-full items-center justify-center overflow-hidden rounded-lg p-10"
       ref={containerRef}
     >
       <div className="flex size-full flex-col max-w-lg max-h-[200px] items-stretch justify-between gap-10">
@@ -146,22 +146,13 @@ const Icons = {
     </svg>
   ),
   notionCal: () => (
-<svg
-  width="800"
-  height="768"
-  viewBox="0 0 1024 1024"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    d="M77.13 0H726.87C821.06 0 900 78.94 900 173.13V823.87C900 918.06 821.06 997 726.87 997H77.13C35.52 997 0 961.48 0 919.87V77.13C0 35.52 35.52 0 77.13 0ZM100 230H704C716.2 230 726 239.8 726 252V838C726 850.2 716.2 860 704 860H100C87.8 860 78 850.2 78 838V252C78 239.8 87.8 230 100 230ZM223 116.5C233.8 116.5 242 108.3 242 97.5V41.5C242 30.7 233.8 22.5 223 22.5C212.2 22.5 204 30.7 204 41.5V97.5C204 108.3 212.2 116.5 223 116.5ZM657 116.5C667.8 116.5 676 108.3 676 97.5V41.5C676 30.7 667.8 22.5 657 22.5C646.2 22.5 638 30.7 638 41.5V97.5C638 108.3 646.2 116.5 657 116.5ZM461 116.5C471.8 116.5 480 108.3 480 97.5V41.5C480 30.7 471.8 22.5 461 22.5C450.2 22.5 442 30.7 442 41.5V97.5C442 108.3 450.2 116.5 461 116.5Z"
-    fill="black"
+<img
+    src="https://cdn.sanity.io/images/uh6jeocs/production/bcb7ae7467166ae8b64fc37bbd5def7b2e1b5d11-2001x2084.png"
+    alt="Calendar"
+    width="800"
+    height="768"
+    style={{ objectFit: 'contain' }}
   />
-  <path
-    d="M523.07 492.94C523.07 477.58 510.36 464.87 495 464.87H384.94C369.58 464.87 356.87 477.58 356.87 492.94V603C356.87 618.36 369.58 631.07 384.94 631.07H495C510.36 631.07 523.07 618.36 523.07 603V492.94Z"
-    fill="black"
-  />
-</svg>
 
 
   ),
@@ -402,44 +393,15 @@ const Icons = {
     </svg>
   ),
   googleCal: () => (
-    <svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 48 48"
-  width="100"
-  height="100"
->
-  <path
-    fill="#4285F4"
-    d="M6 44V14h36v30c0 1.1-.9 2-2 2H8c-1.1 0-2-.9-2-2z"
-  />
-  <path
-    fill="#EA4335"
-    d="M42 6h-8V4c0-1.1-.9-2-2-2s-2 .9-2 2v2H16V4c0-1.1-.9-2-2-2s-2 .9-2 2v2H6c-1.1 0-2 .9-2 2v6h40V8c0-1.1-.9-2-2-2z"
-  />
-  <path fill="#FBBC05" d="M28 25h9v10h-9z" />
-  <path
-    fill="#34A853"
-    d="M19 25h-3v10h3c2.8 0 5-2.2 5-5s-2.2-5-5-5z"
-  />
-  <path
-    fill="#4285F4"
-    d="M14 30h2v2h-2zm4-2h2v2h-2zm-4 4h2v2h-2zm4-2h2v2h-2zm2 2h2v2h-2zm-8-6h2v2h-2zm-4 4h2v2H8zm4-2h2v2h-2zm-4 4h2v2H8zm0-6h2v2H8zm12-2h2v2h-2zm-2 6h2v2h-2zm-2-6h2v2h-2zm-2-2h2v2h-2z"
-  />
+<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 48 48">
+<rect width="22" height="22" x="13" y="13" fill="#fff"></rect><polygon fill="#1e88e5" points="25.68,20.92 26.688,22.36 28.272,21.208 28.272,29.56 30,29.56 30,18.616 28.56,18.616"></polygon><path fill="#1e88e5" d="M22.943,23.745c0.625-0.574,1.013-1.37,1.013-2.249c0-1.747-1.533-3.168-3.417-3.168 c-1.602,0-2.972,1.009-3.33,2.453l1.657,0.421c0.165-0.664,0.868-1.146,1.673-1.146c0.942,0,1.709,0.646,1.709,1.44 c0,0.794-0.767,1.44-1.709,1.44h-0.997v1.728h0.997c1.081,0,1.993,0.751,1.993,1.64c0,0.904-0.866,1.64-1.931,1.64 c-0.962,0-1.784-0.61-1.914-1.418L17,26.802c0.262,1.636,1.81,2.87,3.6,2.87c2.007,0,3.64-1.511,3.64-3.368 C24.24,25.281,23.736,24.363,22.943,23.745z"></path><polygon fill="#fbc02d" points="34,42 14,42 13,38 14,34 34,34 35,38"></polygon><polygon fill="#4caf50" points="38,35 42,34 42,14 38,13 34,14 34,34"></polygon><path fill="#1e88e5" d="M34,14l1-4l-1-4H9C7.343,6,6,7.343,6,9v25l4,1l4-1V14H34z"></path><polygon fill="#e53935" points="34,34 34,42 42,34"></polygon><path fill="#1565c0" d="M39,6h-5v8h8V9C42,7.343,40.657,6,39,6z"></path><path fill="#1565c0" d="M9,42h5v-8H6v5C6,40.657,7.343,42,9,42z"></path>
 </svg>
 
   ),
   outlookCal: () => (
-    <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    width="100"
-    height="100"
-  >
-    <path
-      d="M16 2c-1.103 0-2 .897-2 2v2H6V4c0-1.103-.897-2-2-2S2 2.897 2 4v16c0 1.103.897 2 2 2h10v-6h6V4c0-1.103-.897-2-2-2zM6 2c0-.552.448-1 1-1s1 .448 1 1v2H6V2zm12 16h-4v4h-2v-4H6v-4h4V6h4v8h4v4zm0-8h-4V8h4v2z"
-      fill="#0078D4"
-    />
-  </svg>
+<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 48 48">
+<linearGradient id="gDhs_GJdOvNXmd9k7HRk_a_kzZctsAbGur5_gr1" x1="23.02" x2="25.063" y1="4.362" y2="18.044" gradientUnits="userSpaceOnUse"><stop offset=".042" stop-color="#076db4"></stop><stop offset=".85" stop-color="#0461af"></stop></linearGradient><path fill="url(#gDhs_GJdOvNXmd9k7HRk_a_kzZctsAbGur5_gr1)" d="M42,14H6V8c0-1.105,0.895-2,2-2h32c1.105,0,2,0.895,2,2V14z"></path><linearGradient id="gDhs_GJdOvNXmd9k7HRk_b_kzZctsAbGur5_gr2" x1="21.635" x2="27.567" y1="6.417" y2="58.193" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#33bef0"></stop><stop offset="1" stop-color="#0a85d9"></stop></linearGradient><path fill="url(#gDhs_GJdOvNXmd9k7HRk_b_kzZctsAbGur5_gr2)" d="M6,14v26c0,1.105,0.895,2,2,2h32c1.105,0,2-0.895,2-2V14H6z"></path><path fill="#fff" d="M21,23h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C22,22.552,21.552,23,21,23z"></path><path fill="#fff" d="M29,23h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C30,22.552,29.552,23,29,23z"></path><path fill="#fff" d="M37,23h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C38,22.552,37.552,23,37,23z"></path><path fill="#fff" d="M21,30h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C22,29.552,21.552,30,21,30z"></path><path fill="#fff" d="M13,30h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C14,29.552,13.552,30,13,30z"></path><path fill="#fff" d="M29,30h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C30,29.552,29.552,30,29,30z"></path><path fill="#fff" d="M21,37h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C22,36.552,21.552,37,21,37z"></path><path fill="#fff" d="M13,37h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C14,36.552,13.552,37,13,37z"></path><path fill="#fff" d="M29,37h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C30,36.552,29.552,37,29,37z"></path><path fill="#fff" d="M37,30h-2c-0.552,0-1-0.448-1-1v-2c0-0.552,0.448-1,1-1h2c0.552,0,1,0.448,1,1v2 C38,29.552,37.552,30,37,30z"></path><path d="M14,6v3.5c0,0.276-0.225,0.5-0.5,0.5S13,9.776,13,9.5V6h-2v3.5c0,1.378,1.121,2.5,2.5,2.5 S16,10.878,16,9.5V6H14z" opacity=".05"></path><path d="M14.5,6v3.5c0,0.551-0.448,1-1,1s-1-0.449-1-1V6h-1v3.5c0,1.103,0.897,2,2,2s2-0.897,2-2V6H14.5z" opacity=".07"></path><path d="M35,6v3.5c0,0.276-0.225,0.5-0.5,0.5S34,9.776,34,9.5V6h-2v3.5c0,1.378,1.121,2.5,2.5,2.5 S37,10.878,37,9.5V6H35z" opacity=".05"></path><path d="M35.5,6v3.5c0,0.551-0.448,1-1,1s-1-0.449-1-1V6h-1v3.5c0,1.103,0.897,2,2,2s2-0.897,2-2V6H35.5z" opacity=".07"></path><path fill="#54daff" d="M34.5,11L34.5,11c-0.828,0-1.5-0.672-1.5-1.5v-5C33,3.672,33.672,3,34.5,3l0,0 C35.328,3,36,3.672,36,4.5v5C36,10.328,35.328,11,34.5,11z"></path><path fill="#54daff" d="M13.5,11L13.5,11c-0.828,0-1.5-0.672-1.5-1.5v-5C12,3.672,12.672,3,13.5,3h0 C14.328,3,15,3.672,15,4.5v5C15,10.328,14.328,11,13.5,11z"></path>
+</svg>
   
   ),
 };
