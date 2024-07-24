@@ -44,7 +44,7 @@ const SignupForm: React.FC = () => {
       console.log("Registration successful", data);
       
       // Redirect to home page
-      router.push('/');
+      router.push('/kalendar');
     } catch (error: any) {
       console.error("Registration error:", error);
       setError(error.message);

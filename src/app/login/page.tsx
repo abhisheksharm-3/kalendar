@@ -40,7 +40,7 @@ const LoginForm: React.FC = () => {
       console.log("Login successful", data);
       
       // Redirect to home page
-      router.push('/');
+      router.push('/kalendar');
     } catch (error: any) {
       console.error("Login error:", error);
       setError(error.message);
