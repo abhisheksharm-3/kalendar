@@ -83,7 +83,7 @@ export default function KalendarApp() {
   );
 }
 
-export const Logo = () => {
+const Logo = () => {
   return (
     <Link
       href="#"
