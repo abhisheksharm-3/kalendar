@@ -1,9 +1,14 @@
 "use client";
 
-import React, { forwardRef, useRef } from "react";
-
+import React, { useRef, forwardRef } from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { AnimatedBeam } from "@/components/magicui/animated-beam";
+
+interface CircleProps {
+  className?: string;
+  children?: React.ReactNode;
+}
 
 const Circle = forwardRef<
   HTMLDivElement,
@@ -13,7 +18,7 @@ const Circle = forwardRef<
     <div
       ref={ref}
       className={cn(
-        "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+        "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white/70 p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
         className,
       )}
     >
@@ -21,6 +26,7 @@ const Circle = forwardRef<
     </div>
   );
 });
+
 
 Circle.displayName = "Circle";
 
@@ -35,41 +41,54 @@ export function Integration() {
   const div7Ref = useRef<HTMLDivElement>(null);
 
   return (
-    <div
-      className="relative flex h-[500px] w-full items-center justify-center overflow-hidden rounded-lg p-10"
-      ref={containerRef}
-    >
-      <div className="flex size-full flex-col max-w-lg max-h-[200px] items-stretch justify-between gap-10">
-        <div className="flex flex-row items-center justify-between">
-          <Circle ref={div1Ref}>
-            <Icons.notionCal />
-          </Circle>
-          <Circle ref={div5Ref}>
-            <Icons.googleDocs />
-          </Circle>
-        </div>
-        <div className="flex flex-row items-center justify-between">
-          <Circle ref={div2Ref}>
-            <Icons.notion />
-          </Circle>
-          <Circle ref={div4Ref} className="size-16">
-            <Icons.openai />
-          </Circle>
-          <Circle ref={div6Ref}>
-            <Icons.googleCal />
-          </Circle>
-        </div>
-        <div className="flex flex-row items-center justify-between">
-          <Circle ref={div3Ref}>
-            <Icons.whatsapp />
-          </Circle>
-          <Circle ref={div7Ref}>
-            <Icons.outlookCal />
-          </Circle>
-        </div>
-      </div>
+    <div className="bg-gradient-to-b from-black via-purple-900 to-black text-white py-20 sm:py-32">
+      <div className="container mx-auto px-4">
+        <motion.h2 
+          className="text-4xl sm:text-5xl font-bold mb-12 text-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          Seamless Integration
+        </motion.h2>
+        <motion.div
+          className="relative flex h-[400px] w-full items-center justify-center overflow-hidden rounded-lg"
+          ref={containerRef}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+        >
+          <div className="flex size-full flex-col max-w-lg max-h-[200px] items-stretch justify-between">
+            <div className="flex flex-row items-center justify-between">
+              <Circle ref={div1Ref}>
+                <Icons.notionCal />
+              </Circle>
+              <Circle ref={div5Ref}>
+                <Icons.googleDocs />
+              </Circle>
+            </div>
+            <div className="flex flex-row items-center justify-between">
+              <Circle ref={div2Ref}>
+                <Icons.notion />
+              </Circle>
+              <Circle ref={div4Ref} className="size-16">
+                <Icons.openai />
+              </Circle>
+              <Circle ref={div6Ref}>
+                <Icons.googleCal />
+              </Circle>
+            </div>
+            <div className="flex flex-row items-center justify-between">
+              <Circle ref={div3Ref}>
+                <Icons.whatsapp />
+              </Circle>
+              <Circle ref={div7Ref}>
+                <Icons.outlookCal />
+              </Circle>
+            </div>
+          </div>
 
-      <AnimatedBeam
+           <AnimatedBeam
         containerRef={containerRef}
         fromRef={div1Ref}
         toRef={div4Ref}
@@ -110,6 +129,17 @@ export function Integration() {
         endYOffset={10}
         reverse
       />
+        </motion.div>
+        <motion.p 
+          className="text-center text-lg text-purple-200 mt-12 max-w-2xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1 }}
+        >
+          Our AI-powered system seamlessly integrates with your favorite tools,
+          ensuring intelligent time management across all your platforms.
+        </motion.p>
+      </div>
     </div>
   );
 }
