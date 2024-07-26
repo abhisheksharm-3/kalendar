@@ -60,7 +60,7 @@ export default function NavbarComponent() {
 
       <NavbarContent justify="end">
         <NavbarItem className="hidden lg:flex">
-          <Link href="/login" className="text-white/70 hover:text-white transition-colors">
+          <Link href="/user/auth/login" className="text-white/70 hover:text-white transition-colors">
             <RiLoginBoxLine className="mr-2 inline" />
             Login
           </Link>
