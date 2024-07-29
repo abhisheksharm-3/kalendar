@@ -4,7 +4,9 @@ import { UserHistory, UserPreferences } from "./types";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function getAISchedule(events: Event[], userPreferences: UserPreferences) {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  console.log(process.env.GEMINI_API_KEY);
+  
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `Given the following events and user preferences, suggest an optimized schedule:
     Events: ${JSON.stringify(events)}
