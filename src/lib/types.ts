@@ -1,10 +1,11 @@
 export interface Event {
-    id: string;
-    title: string;
-    startTime: string;
-    endTime: string;
-    day: number;
-  }
+  id: number;
+  title: string;
+  day: number;
+  start: number;
+  duration: number;
+  color: string;
+}
   
   export interface UserPreferences {
     workStartTime: string;
