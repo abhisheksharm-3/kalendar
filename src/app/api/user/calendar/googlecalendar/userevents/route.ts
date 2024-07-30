@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server';
-import { NextApiRequest } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { createSessionClient, getLoggedInUser } from '@/lib/server/appwrite';
 import { Databases } from 'node-appwrite';
 
-export async function GET(req: NextApiRequest) {
+export async function GET(req: NextRequest) {
     try {
         const user = await getLoggedInUser();
         if (!user) {
