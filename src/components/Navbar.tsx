@@ -59,19 +59,13 @@ export default function NavbarComponent() {
       </NavbarContent>
 
       <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="/user/auth/login" className="text-white/70 hover:text-white transition-colors">
-            <RiLoginBoxLine className="mr-2 inline" />
-            Login
-          </Link>
-        </NavbarItem>
         <NavbarItem>
           <Button 
             as={Link} 
-            href="/user/auth/signup" 
+            href="/user/auth" 
             className="bg-purple-600 text-white hover:bg-purple-700 transition-colors"
           >
-            Sign Up Free
+            Get Started
           </Button>
         </NavbarItem>
       </NavbarContent>
@@ -94,7 +88,7 @@ export default function NavbarComponent() {
           <Link
             color="danger"
             className="w-full"
-            href="/user/auth/login"
+            href="/user/auth"
             size="lg"
           >
             <RiLoginBoxLine className="mr-2 inline" />
