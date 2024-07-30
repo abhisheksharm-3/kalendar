@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import LeftSidebar from '@/components/LeftSidebar';
 import WeekView from '@/components/WeekView';
 import DayView from '@/components/DayView';
@@ -7,10 +7,60 @@ import MonthView from '@/components/MonthView';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { getGoogleCalendarEvents } from '@/lib/helpers/googleCalendar';
+import { getGoogleAccessToken } from '@/lib/helpers/getGoogleAccessToken';
 
 const KalendarApp = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
+  const [events, setEvents] = useState([]);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchAccessToken() {
+      const token = await getGoogleAccessToken();
+      setAccessToken(token);
+    }
+    fetchAccessToken();
+  }, []);
+
+  useEffect(() => {
+    if (accessToken) {
+      fetchEvents();
+    }
+  }, [date, view, accessToken]);
+
+  const fetchEvents = async () => {
+    if (!date || !accessToken) return;
+    if (!date) return;
+
+    let timeMin, timeMax;
+    switch (view) {
+      case 'day':
+        timeMin = new Date(date.setHours(0, 0, 0, 0)).toISOString();
+        timeMax = new Date(date.setHours(23, 59, 59, 999)).toISOString();
+        break;
+      case 'week':
+        const startOfWeek = new Date(date);
+        startOfWeek.setDate(date.getDate() - date.getDay());
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        timeMin = new Date(startOfWeek.setHours(0, 0, 0, 0)).toISOString();
+        timeMax = new Date(endOfWeek.setHours(23, 59, 59, 999)).toISOString();
+        break;
+      case 'month':
+        const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        timeMin = new Date(startOfMonth.setHours(0, 0, 0, 0)).toISOString();
+        timeMax = new Date(endOfMonth.setHours(23, 59, 59, 999)).toISOString();
+        break;
+    }
+
+    const fetchedEvents = await getGoogleCalendarEvents(accessToken, timeMin, timeMax);
+    console.log(fetchedEvents);
+    
+    // setEvents(fetchedEvents);
+  };
 
   const goToPrevious = () => {
     if(date){

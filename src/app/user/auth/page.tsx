@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { SiGooglecalendar, SiMicrosoftoutlook } from "react-icons/si";
 import { motion } from 'framer-motion';
 import Layout from "@/components/Layout";
@@ -9,7 +8,6 @@ import { Tooltip } from "@nextui-org/react";
 import { getLoggedInUser } from "@/lib/server/appwrite";
 
 const SignupForm: React.FC = () => {
-  const router = useRouter();
   const [error, setError] = useState<string>("");
 
   const handleGoogleLogin = async () => {
@@ -17,8 +15,6 @@ const SignupForm: React.FC = () => {
       await signUpWithGoogle();
       const res = await getLoggedInUser();
       console.log(res);
-      
-      router.push('/kalendar');
     } catch (error: any) {
       console.error("Google login error:", error);
       setError(error.message);
