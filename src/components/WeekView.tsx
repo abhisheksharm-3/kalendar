@@ -11,6 +11,7 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate = new Date() }) => {
   const [date, setDate] = useState(new Date(currentDate));
   const [events, setEvents] = useState<Event[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  
 
   const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   const timeSlots = Array.from({ length: 24 }, (_, i) => i); // 0 to 23 hours

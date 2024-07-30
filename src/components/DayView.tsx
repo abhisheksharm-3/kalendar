@@ -21,7 +21,7 @@ const DayView: React.FC<DayViewProps> = ({ currentDate }) => {
 
   return (
     <div className="grid grid-cols-1 h-full">
-      <div className="overflow-auto">
+      <div className="overflow-auto scrollbar-hide">
         <div className="flex">
           <div className="w-20 border-r dark:border-gray-700">
             {timeSlots.map((hour) => (

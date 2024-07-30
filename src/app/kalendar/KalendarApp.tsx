@@ -63,7 +63,7 @@ const KalendarApp = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
+    <div className="flex h-screen overflow-y-hidden bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
       <LeftSidebar date={date} setDate={setDate} />
       <div className="flex-1 p-4">
         <div className="flex justify-between items-center mb-4">
