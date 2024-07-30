@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from 'react';
 import { RiArrowLeftSLine, RiArrowRightSLine, RiSearch2Line } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
