@@ -6,6 +6,7 @@ export async function getOAuth2Session() {
   try {
     const { account } = await createSessionClient();
     const sessions = await account.listSessions();
+    console.log(sessions);
     
     // Find the Google OAuth2 session
     const googleSession = sessions.sessions.find(session => session.provider === 'google');
