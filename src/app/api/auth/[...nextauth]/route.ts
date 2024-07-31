@@ -9,7 +9,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: "https://www.googleapis.com/auth/calendar.readonly",
+          scope: "openid https://www.googleapis.com/auth/calendar.readonly",
           prompt: "consent",
           access_type: "offline",
           response_type: "code"
