@@ -1,32 +1,41 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";  // Adjust this import path as necessary
 import { google } from 'googleapis';
-import { NextResponse } from 'next/server';
+import { NextRequest } from "next/server";
 
-// Initialize the Google Calendar API client
-const calendar = google.calendar({
-  version: 'v3',
-  auth: new google.auth.GoogleAuth({
-    credentials: {
-      client_email: process.env.GOOGLE_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_API_KEY!.replace(/\\n/g, '\n'),
-    },
-    scopes: ['https://www.googleapis.com/auth/calendar.readonly'],
-  }),
-});
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
 
-export async function GET() {
+  if (!session || !session.accessToken) {
+    return new Response(JSON.stringify({ error: "Not authenticated" }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const oauth2Client = new google.auth.OAuth2();
+  oauth2Client.setCredentials({ access_token: session.accessToken });
+
+  const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
   try {
     const response = await calendar.events.list({
       calendarId: 'primary',
-      timeMin: new Date().toISOString(),
+      timeMin: (new Date()).toISOString(),
       maxResults: 10,
       singleEvents: true,
       orderBy: 'startTime',
     });
 
-    const events = response.data.items;
-    return NextResponse.json({ events });
+    return new Response(JSON.stringify(response.data.items), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    console.error('Error fetching calendar events:', error);
-    return NextResponse.json({ error: 'Failed to fetch calendar events' }, { status: 500 });
+    console.error('Error fetching events:', error);
+    return new Response(JSON.stringify({ error: "Failed to fetch events" }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
