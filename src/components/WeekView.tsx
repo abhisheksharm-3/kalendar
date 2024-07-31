@@ -4,50 +4,20 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Event } from '@/lib/types';
 
 interface WeekViewProps {
-  currentDate?: Date;
+  currentDate: Date;
+  events: Event[];
 }
 
-const WeekView: React.FC<WeekViewProps> = ({ currentDate = new Date() }) => {
-  const [date, setDate] = useState(new Date(currentDate));
-  const [events, setEvents] = useState<Event[]>([]);
+const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
+  const [date, setDate] = useState(currentDate);
   const containerRef = useRef<HTMLDivElement>(null);
   
-
   const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   const timeSlots = Array.from({ length: 24 }, (_, i) => i); // 0 to 23 hours
 
   useEffect(() => {
-    // Fetch events for the current week
-    fetchEvents(date);
-  }, [date]);
-
-  const fetchEvents = (date: Date) => {
-    // This is where you would typically fetch events from an API
-    // For now, we'll use the static events data
-    const staticEvents: Event[] = [
-      { id: 1, title: "Monday Wake Up", day: 1, start: 8, duration: 0.5, color: "bg-blue-700" },
-      { id: 2, title: "All-Team Kickoff", day: 1, start: 9, duration: 1, color: "bg-blue-700" },
-      { id: 3, title: "Financial Update", day: 1, start: 10, duration: 1, color: "bg-blue-700" },
-      { id: 4, title: "New Employee Welcome Lunch!", day: 1, start: 11, duration: 1, color: "bg-purple-700" },
-      { id: 5, title: "Design Review", day: 1, start: 13, duration: 2, color: "bg-blue-700" },
-      { id: 6, title: "1:1 with Jon", day: 1, start: 14, duration: 1, color: "bg-orange-700" },
-      { id: 7, title: "Design Review", day: 2, start: 9, duration: 1, color: "bg-blue-700" },
-      { id: 8, title: "Figma - Acme Meetin...", day: 2, start: 9, duration: 1, color: "bg-green-700" },
-      { id: 9, title: "Concept Design Review II", day: 2, start: 14, duration: 1, color: "bg-blue-700" },
-      { id: 10, title: "Design System Kickoff Lunch", day: 2, start: 12, duration: 1, color: "bg-blue-700" },
-      { id: 11, title: "Coffee Chat", day: 3, start: 9, duration: 1, color: "bg-blue-700" },
-      { id: 12, title: "Onboarding Presentation", day: 3, start: 11, duration: 1, color: "bg-purple-700" },
-      { id: 13, title: "MVP Prioritization Workshop", day: 3, start: 13, duration: 2, color: "bg-blue-700" },
-      { id: 14, title: "Design Team Happy Hour", day: 3, start: 16, duration: 1, color: "bg-red-700" },
-      { id: 15, title: "Coffee Chat", day: 5, start: 9, duration: 1, color: "bg-blue-700" },
-      { id: 16, title: "Health Benefits Walkthrough", day: 5, start: 10, duration: 1, color: "bg-purple-700" },
-      { id: 17, title: "Design Review", day: 5, start: 13, duration: 2, color: "bg-blue-700" },
-      { id: 18, title: "Marketing Meet-and-Greet", day: 5, start: 12, duration: 1, color: "bg-blue-700" },
-      { id: 19, title: "1:1 with Heather", day: 5, start: 14, duration: 1, color: "bg-orange-700" },
-      { id: 20, title: "Happy Hour", day: 5, start: 16, duration: 1, color: "bg-red-700" },
-    ];
-    setEvents(staticEvents);
-  };
+    setDate(currentDate);
+  }, [currentDate]);
 
   const goToPreviousWeek = () => {
     const newDate = new Date(date);
@@ -83,8 +53,10 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate = new Date() }) => {
   };
 
   const getEventStyle = (event: Event) => {
-    const top = `${(event.start - timeSlots[0]) * 60}px`;
-    const height = `${event.duration * 60}px`;
+    const startDate = new Date(event.start.dateTime);
+    const endDate = new Date(event.end.dateTime);
+    const top = `${startDate.getHours() * 60 + startDate.getMinutes()}px`;
+    const height = `${(endDate.getTime() - startDate.getTime()) / (60 * 1000)}px`;
     return { top, height };
   };
 
@@ -125,16 +97,27 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate = new Date() }) => {
                       <div key={hour} className="h-[60px] border-b dark:border-gray-700"></div>
                     ))}
                     {events
-                      .filter(event => event.day === index)
-                      .map(event => (
-                        <div
-                          key={event.id}
-                          className={`absolute left-0 right-0 ${event.color} text-black p-1 text-xs overflow-hidden rounded`}
-                          style={getEventStyle(event)}
-                        >
-                          {event.title}
-                        </div>
-                      ))}
+      .filter(event => {
+        const eventDate = new Date(event.start.dateTime);
+        return eventDate >= getWeekDates()[0] && eventDate <= getWeekDates()[6];
+      })
+      .map(event => {
+        const eventDate = new Date(event.start.dateTime);
+        const dayIndex = eventDate.getDay();
+        return (
+          <div
+            key={event.id}
+            className={`absolute left-0 right-0 bg-blue-500 text-white p-1 text-xs overflow-hidden rounded`}
+            style={{
+              ...getEventStyle(event),
+              left: `${(100 / 7) * dayIndex}%`,
+              width: `${150 / 7}%`,
+            }}
+          >
+            {event.summary}
+          </div>
+        );
+      })}
                   </div>
                 </div>
               ))}

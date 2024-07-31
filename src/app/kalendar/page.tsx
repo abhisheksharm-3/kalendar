@@ -22,7 +22,6 @@ export default function KalendarPage() {
       });
       setEvents(response.data);
       console.log(response);
-      
     } catch (error) {
       console.error('Error fetching events:', error);
     }
@@ -33,11 +32,13 @@ export default function KalendarPage() {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div>
       {!session ? (
-        <button onClick={() => signIn("google")}>Connect Google Calendar</button>
+        <div className="h-screen w-screen flex items-center justify-center">
+          <button onClick={() => signIn("google")}>Connect Google Calendar</button>
+        </div>
       ) : (
-        <KalendarApp />
+        <KalendarApp events={events} />
       )}
     </div>
   );

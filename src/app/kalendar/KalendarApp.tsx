@@ -1,5 +1,5 @@
-"use client"
-import React, { useEffect, useState } from 'react';
+"use client";
+import React, { useState, useEffect } from 'react';
 import LeftSidebar from '@/components/LeftSidebar';
 import WeekView from '@/components/WeekView';
 import DayView from '@/components/DayView';
@@ -7,38 +7,31 @@ import MonthView from '@/components/MonthView';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { getGoogleCalendarEvents } from '@/lib/helpers/googleCalendar';
-import { getGoogleAccessToken } from '@/lib/helpers/getGoogleAccessToken';
+import { Event } from '@/lib/types';
 
-const KalendarApp = () => {
+interface KalendarAppProps {
+  events: Event[];
+}
+
+const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
-  const [events, setEvents] = useState([]);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>(events);
 
   useEffect(() => {
-    async function fetchAccessToken() {
-      const token = await getGoogleAccessToken();
-      setAccessToken(token);
+    if (date) {
+      filterEventsByDate();
     }
-    fetchAccessToken();
-  }, []);
+  }, [date, view, events]);
 
-  useEffect(() => {
-    if (accessToken) {
-      fetchEvents();
-    }
-  }, [date, view, accessToken]);
-
-  const fetchEvents = async () => {
-    if (!date || !accessToken) return;
+  const filterEventsByDate = () => {
     if (!date) return;
 
-    let timeMin, timeMax;
+    let timeMin: string, timeMax: string;
     switch (view) {
       case 'day':
-        timeMin = new Date(date.setHours(0, 0, 0, 0)).toISOString();
-        timeMax = new Date(date.setHours(23, 59, 59, 999)).toISOString();
+        timeMin = new Date(new Date(date).setHours(0, 0, 0, 0)).toISOString();
+        timeMax = new Date(new Date(date).setHours(23, 59, 59, 999)).toISOString();
         break;
       case 'week':
         const startOfWeek = new Date(date);
@@ -56,15 +49,17 @@ const KalendarApp = () => {
         break;
     }
 
-    const fetchedEvents = await getGoogleCalendarEvents(accessToken, timeMin, timeMax);
-    console.log(fetchedEvents);
-    
-    // setEvents(fetchedEvents);
+    const filtered = events.filter(event => {
+      const eventStart = new Date(event.start.dateTime).toISOString();
+      return eventStart >= timeMin && eventStart <= timeMax;
+    });
+
+    setFilteredEvents(filtered);
   };
 
   const goToPrevious = () => {
-    if(date){
-      const newDate = new Date(date);
+    if (!date) return;
+    const newDate = new Date(date);
     switch (view) {
       case 'day':
         newDate.setDate(newDate.getDate() - 1);
@@ -77,11 +72,10 @@ const KalendarApp = () => {
         break;
     }
     setDate(newDate);
-  }
   };
 
   const goToNext = () => {
-    if(date){
+    if (!date) return;
     const newDate = new Date(date);
     switch (view) {
       case 'day':
@@ -95,20 +89,19 @@ const KalendarApp = () => {
         break;
     }
     setDate(newDate);
-  }
   };
 
   const formatDateHeader = () => {
+    if (!date) return '';
     switch (view) {
       case 'day':
-        return date?.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        return date.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
       case 'week':
-        if(date){
         const endOfWeek = new Date(date);
         endOfWeek.setDate(date.getDate() + 6);
-        return `${date.toLocaleDateString('default', { month: 'long', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })}`;}
+        return `${date.toLocaleDateString('default', { month: 'long', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })}`;
       case 'month':
-        return date?.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+        return date.toLocaleDateString('default', { month: 'long', year: 'numeric' });
     }
   };
 
@@ -151,9 +144,9 @@ const KalendarApp = () => {
             <Input className="pl-8" placeholder="Search" />
           </div>
         </div>
-        {view === 'day' && <DayView currentDate={date} />}
-        {view === 'week' && <WeekView currentDate={date} />}
-        {view === 'month' && <MonthView currentDate={date} />}
+        {view === 'day' && date && <DayView currentDate={date} events={filteredEvents} />}
+        {view === 'week' && date && <WeekView currentDate={date} events={filteredEvents} />}
+        {view === 'month' && date && <MonthView currentDate={date} />}
       </div>
     </div>
   );

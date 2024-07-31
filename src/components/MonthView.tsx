@@ -28,27 +28,31 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
 
   if(!currentDate) return null;
   const days = getDaysInMonth(currentDate);
-
+  const getEventsForDay = (day: Date) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.start.dateTime);
+      return eventDate.toDateString() === day.toDateString();
+    });
+  };
   return (
     <div className="grid grid-cols-7 gap-1 p-4">
       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
         <div key={day} className="text-center font-semibold">{day}</div>
       ))}
-      {days.map((day, index) => (
+          {days.map((day, index) => (
         <div key={index} className="h-24 border dark:border-gray-700 p-1">
           {day && (
             <>
               <div className="text-right">{day.getDate()}</div>
               <div className="text-xs">
-                {events
-                  .filter(event => event.day === day.getDate())
+                {getEventsForDay(day)
                   .slice(0, 3)
                   .map(event => (
-                    <div key={event.id} className={`${event.color} p-1 mb-1 rounded truncate`}>
-                      {event.title}
+                    <div key={event.id} className="bg-blue-500 text-white p-1 mb-1 rounded truncate">
+                      {event.summary}
                     </div>
                   ))}
-                {events.filter(event => event.day === day.getDate()).length > 3 && (
+                {getEventsForDay(day).length > 3 && (
                   <div className="text-gray-500">More...</div>
                 )}
               </div>
@@ -56,7 +60,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
           )}
         </div>
       ))}
-    </div>
+        </div>
   );
 };
 
