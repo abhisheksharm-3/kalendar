@@ -3,25 +3,22 @@ import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import UpcomingEvent from './UpcomingEvent';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-
-interface Event {
-  id: number;
-  title: string;
-  time: string;
-  description?: string;
-  link?: string;
-}
+import { getAISummary } from '@/lib/ai-services';
+import { Event } from '@/lib/types';
 
 interface LeftSidebarProps {
   date: Date | undefined;
   setDate: (date: Date | undefined) => void;
+  events: Event[];
 }
 
-const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate }) => {
+const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate, events }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState('');
   const [currentDay, setCurrentDay] = useState('');
   const [isCalendarExpanded, setIsCalendarExpanded] = useState(true);
+  const [aiSummary, setAiSummary] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -30,45 +27,40 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate }) => {
     setCurrentDay(now.toLocaleString('default', { weekday: 'long' }));
   }, []);
 
+  useEffect(() => {
+    if (date && events.length > 0) {
+      generateAISummary();
+    }
+  }, [date, events]);
+
   const getDayName = (date: Date | undefined) => {
     if (!date) return '';
     return date.toLocaleString('default', { weekday: 'long' });
   };
 
-  const upcomingEvents: Event[] = [
-    { id: 1, title: "All Hands Company Meeting", time: "8:30 - 9:00 AM", description: "Monthly catch-up" },
-    { id: 2, title: "Quarterly review", time: "9:30 - 10:00 AM", link: "https://zoom.us/j/1234567890" },
-    { id: 3, title: "Visit to discuss improvements", time: "8:30 - 9:00 AM", link: "https://zoom.us/j/0987654321" },
-    { id: 4, title: "Presentation on new products and cost structure", time: "8:30 - 9:00 AM" },
-    { id: 5, title: "City Sales Pitch", time: "8:30 - 9:00 AM", link: "https://zoom.us/j/1357924680" },
-  ];
-
   const getEventsForSelectedDay = () => {
     if (!date) return [];
-    return upcomingEvents.filter(event => {
-      const eventDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), date.getDate());
-      return eventDate.getDate() === date.getDate();
+    return events.filter(event => {
+      const eventDate = new Date(event.start.dateTime);
+      return eventDate.toDateString() === date.toDateString();
     });
   };
 
-  const generateDaySummary = (events: Event[]) => {
-    if (events.length === 0) return `You have no events scheduled for ${getDayName(date)}, ${date?.toLocaleDateString()}.`;
-    let summary = `You have ${events.length} event(s) scheduled for ${getDayName(date)}, ${date?.toLocaleDateString()}. `;
-    let busyCount = 0;
-    events.forEach(event => {
-      if (event.time.includes("AM")) {
-        summary += `In the morning, you have "${event.title}". `;
-      } else {
-        summary += `In the afternoon, you have "${event.title}". `;
-      }
-      busyCount++;
-    });
-    summary += `Overall, the day is ${busyCount > 3 ? "busy and not very productive." : "quite productive."}`;
-    return summary;
+  const generateAISummary = async () => {
+    setIsLoading(true);
+    const eventsForDay = getEventsForSelectedDay();
+    try {
+      const insights = await getAISummary(eventsForDay);
+      setAiSummary(insights.join(' '));
+    } catch (error) {
+      console.error("Error generating AI summary:", error);
+      setAiSummary("Unable to generate AI summary at this time.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const eventsForSelectedDay = getEventsForSelectedDay();
-  const daySummary = generateDaySummary(eventsForSelectedDay);
 
   return (
     <div className="w-80 bg-white dark:bg-gray-900 shadow-lg rounded-lg overflow-y-scroll scrollbar-hide border-r">
@@ -100,7 +92,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate }) => {
           <h2 className="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">
             {getDayName(date)}, {date?.toLocaleDateString()}
           </h2>
-          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">{daySummary}</p>
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">{aiSummary}</p>
           
           {eventsForSelectedDay.length > 0 && (
             <div>
