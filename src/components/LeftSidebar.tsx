@@ -86,7 +86,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate, events, onClos
     >
       <Sun className="mx-auto h-16 w-16 text-yellow-400 mb-4" />
       <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Clear Schedule Ahead!</h3>
-      <p className="text-gray-600 dark:text-gray-400">Enjoy your free time today. Maybe it's a good day for that hobby you've been neglecting?</p>
+      <p className="text-gray-600 dark:text-gray-400">Enjoy your free time today. Maybe it&apos;s a good day for that hobby you&apos;ve been neglecting?</p>
     </motion.div>
   );
 
@@ -98,7 +98,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate, events, onClos
     >
       <Zap className="mx-auto h-16 w-16 text-purple-400 mb-4" />
       <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">AI Insights Coming Soon!</h3>
-      <p className="text-gray-600 dark:text-gray-400">We're preparing to analyze your day. Check back in a moment for AI-powered insights!</p>
+      <p className="text-gray-600 dark:text-gray-400">We&apos;re preparing to analyze your day. Check back in a moment for AI-powered insights!</p>
     </motion.div>
   );
 
