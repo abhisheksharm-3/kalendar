@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";  // Adjust this import path as necessary
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth";  // Adjust this import path as necessary
 import { google } from 'googleapis';
 import { NextRequest } from "next/server";
 
