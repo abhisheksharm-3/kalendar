@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Event } from '@/lib/types';
+import { motion } from 'framer-motion';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -10,6 +11,7 @@ interface WeekViewProps {
 
 const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
   const [date, setDate] = useState(currentDate);
+  const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -19,26 +21,39 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
     setDate(currentDate);
   }, [currentDate]);
 
-  const goToPreviousWeek = () => {
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // Adjust this breakpoint as needed
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const goToPreviousDay = () => {
     const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() - 7);
+    newDate.setDate(newDate.getDate() - (isMobile ? 3 : 7));
     setDate(newDate);
   };
 
-  const goToNextWeek = () => {
+  const goToNextDay = () => {
     const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() + 7);
+    newDate.setDate(newDate.getDate() + (isMobile ? 3 : 7));
     setDate(newDate);
   };
 
-  const getWeekDates = () => {
+  const getDates = () => {
     const dates = [];
-    const startOfWeek = new Date(date);
-    startOfWeek.setDate(date.getDate() - date.getDay());
+    const startDate = new Date(date);
+    startDate.setDate(date.getDate() - (isMobile ? 1 : date.getDay()));
     
-    for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(startOfWeek);
-      dayDate.setDate(startOfWeek.getDate() + i);
+    for (let i = 0; i < (isMobile ? 3 : 7); i++) {
+      const dayDate = new Date(startDate);
+      dayDate.setDate(startDate.getDate() + i);
       dates.push(dayDate);
     }
     return dates;
@@ -60,64 +75,76 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
     return { top, height };
   };
 
+  const getEventColor = (event: Event) => {
+    const colors = [
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-yellow-500',
+      'bg-indigo-500',
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-        <h1 className="text-2xl font-bold">Calendar</h1>
-        <div className="flex items-center space-x-4">
-          <button onClick={goToPreviousWeek} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-            <ChevronLeft />
-          </button>
-          <span className="font-semibold">
-            {date.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
-          </span>
-          <button onClick={goToNextWeek} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-            <ChevronRight />
-          </button>
-        </div>
+    <div className="h-full flex flex-col bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 rounded-lg shadow-lg">
+      <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+        <button onClick={goToPreviousDay} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <h2 className="text-lg font-semibold">
+          {`${getDates()[0].toLocaleDateString()} - ${getDates()[getDates().length - 1].toLocaleDateString()}`}
+        </h2>
+        <button onClick={goToNextDay} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </div>
-      <div className="flex-grow overflow-scroll scrollbar-hide">
-        <div className="grid grid-cols-8 h-full">
+      <div className="flex-grow overflow-auto scrollbar-hide" ref={containerRef}>
+        <div className={`grid ${isMobile ? 'grid-cols-4' : 'grid-cols-8'} h-full`}>
           <div className="col-span-1 border-r dark:border-gray-700">
             {timeSlots.map((hour) => (
-              <div key={hour} className="h-[60px] text-right pr-2 text-sm">
+              <div key={hour} className="h-[60px] text-right pr-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 {formatTime(hour)}
               </div>
             ))}
           </div>
-          <div className="col-span-7 overflow-hide" ref={containerRef}>
-            <div className="grid grid-cols-7 h-full">
-              {getWeekDates().map((date, index) => (
+          <div className={`${isMobile ? 'col-span-3' : 'col-span-7'} overflow-hidden`}>
+            <div className={`grid ${isMobile ? 'grid-cols-3' : 'grid-cols-7'} h-full`}>
+              {getDates().map((date, index) => (
                 <div key={index} className="border-r dark:border-gray-700">
-                  <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 p-2 text-center border-b dark:border-gray-700">
+                  <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 p-2 text-center border-b dark:border-gray-700 font-semibold">
                     {formatDateHeader(date)}
                   </div>
                   <div className="relative">
                     {timeSlots.map((hour) => (
-                      <div key={hour} className="h-[60px] border-b dark:border-gray-700"></div>
+                      <div key={hour} className="h-[60px] border-b dark:border-gray-700 relative">
+                        <div className="absolute left-0 w-full h-px bg-gray-200 dark:bg-gray-700" style={{ top: '50%' }}></div>
+                      </div>
                     ))}
                     {events
-      .filter(event => {
-        const eventDate = new Date(event.start.dateTime);
-        return eventDate >= getWeekDates()[0] && eventDate <= getWeekDates()[6];
-      })
-      .map(event => {
-        const eventDate = new Date(event.start.dateTime);
-        const dayIndex = eventDate.getDay();
-        return (
-          <div
-            key={event.id}
-            className={`absolute left-0 right-0 bg-blue-500 text-white p-1 text-xs overflow-hidden rounded`}
-            style={{
-              ...getEventStyle(event),
-              left: `${(100 / 7) * dayIndex}%`,
-              width: `${150 / 7}%`,
-            }}
-          >
-            {event.summary}
-          </div>
-        );
-      })}
+                      .filter(event => {
+                        const eventDate = new Date(event.start.dateTime);
+                        return eventDate.toDateString() === date.toDateString();
+                      })
+                      .map((event, eventIndex) => {
+                        const eventColor = getEventColor(event);
+                        return (
+                          <motion.div
+                            key={event.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, delay: eventIndex * 0.1 }}
+                            className={`absolute left-1 right-1 ${eventColor} text-white p-2 text-xs overflow-hidden rounded-lg shadow-md`}
+                            style={getEventStyle(event)}
+                          >
+                            <div className="font-bold truncate">{event.summary}</div>
+                            <div className="text-xs opacity-80">
+                              {formatTime(new Date(event.start.dateTime).getHours())} - {formatTime(new Date(event.end.dateTime).getHours())}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                   </div>
                 </div>
               ))}

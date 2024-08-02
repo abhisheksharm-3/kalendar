@@ -7,6 +7,7 @@ import KalendarApp from './KalendarApp';
 import { motion } from 'framer-motion';
 import { RiRocketLine, RiEmotionLaughLine, RiRefreshLine } from "@remixicon/react";
 import { Button } from '@nextui-org/react';
+import { Event } from '@/lib/types';
 
 export default function KalendarPage() {
   const { data: session, status } = useSession();
@@ -93,6 +94,184 @@ export default function KalendarPage() {
       </div>
     );
   }
-
+  // const events: Event[] = [
+  //   {
+  //     kind: "calendar#event",
+  //     etag: "\"3375461728374000\"",
+  //     id: "1h3k5m7n9p2r4t6v",
+  //     status: "confirmed",
+  //     htmlLink: "https://www.google.com/calendar/event?eid=1h3k5m7n9p2r4t6v",
+  //     created: "2024-07-25T09:00:00.000Z",
+  //     updated: "2024-07-25T09:00:00.000Z",
+  //     summary: "Team Standup",
+  //     description: "Daily team standup meeting",
+  //     creator: {
+  //       email: "user@example.com",
+  //       self: true
+  //     },
+  //     organizer: {
+  //       email: "user@example.com",
+  //       self: true
+  //     },
+  //     start: {
+  //       dateTime: "2024-08-01T09:00:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     end: {
+  //       dateTime: "2024-08-01T09:30:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     iCalUID: "1h3k5m7n9p2r4t6v@google.com",
+  //     sequence: 0,
+  //     reminders: {
+  //       useDefault: true
+  //     },
+  //     eventType: "default"
+  //   },
+  //   {
+  //     kind: "calendar#event",
+  //     etag: "\"3375461728374001\"",
+  //     id: "2i4l6o8q1s3u5w7y",
+  //     status: "confirmed",
+  //     htmlLink: "https://www.google.com/calendar/event?eid=2i4l6o8q1s3u5w7y",
+  //     created: "2024-07-26T10:00:00.000Z",
+  //     updated: "2024-07-26T10:00:00.000Z",
+  //     summary: "Project Review",
+  //     description: "Monthly project review meeting",
+  //     creator: {
+  //       email: "manager@example.com",
+  //       self: false
+  //     },
+  //     organizer: {
+  //       email: "manager@example.com",
+  //       self: false
+  //     },
+  //     start: {
+  //       dateTime: "2024-08-01T14:00:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     end: {
+  //       dateTime: "2024-08-01T15:30:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     iCalUID: "2i4l6o8q1s3u5w7y@google.com",
+  //     sequence: 0,
+  //     reminders: {
+  //       useDefault: false,
+  //       overrides: [
+  //         {
+  //           method: "email",
+  //           minutes: 30
+  //         }
+  //       ]
+  //     },
+  //     eventType: "default"
+  //   },
+  //   {
+  //     kind: "calendar#event",
+  //     etag: "\"3375461728374002\"",
+  //     id: "3j5m7o9q1s3u5w7y",
+  //     status: "confirmed",
+  //     htmlLink: "https://www.google.com/calendar/event?eid=3j5m7o9q1s3u5w7y",
+  //     created: "2024-07-27T11:00:00.000Z",
+  //     updated: "2024-07-27T11:00:00.000Z",
+  //     summary: "Lunch with Client",
+  //     description: "Lunch meeting with potential client",
+  //     creator: {
+  //       email: "user@example.com",
+  //       self: true
+  //     },
+  //     organizer: {
+  //       email: "user@example.com",
+  //       self: true
+  //     },
+  //     start: {
+  //       dateTime: "2024-08-01T12:00:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     end: {
+  //       dateTime: "2024-08-01T13:30:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     iCalUID: "3j5m7o9q1s3u5w7y@google.com",
+  //     sequence: 0,
+  //     reminders: {
+  //       useDefault: true
+  //     },
+  //     eventType: "default"
+  //   },
+  //   {
+  //     kind: "calendar#event",
+  //     etag: "\"3375461728374003\"",
+  //     id: "4k6n8p0r2t4v6x8z",
+  //     status: "confirmed",
+  //     htmlLink: "https://www.google.com/calendar/event?eid=4k6n8p0r2t4v6x8z",
+  //     created: "2024-07-28T12:00:00.000Z",
+  //     updated: "2024-07-28T12:00:00.000Z",
+  //     summary: "Team Building Workshop",
+  //     description: "Annual team building workshop",
+  //     creator: {
+  //       email: "hr@example.com",
+  //       self: false
+  //     },
+  //     organizer: {
+  //       email: "hr@example.com",
+  //       self: false
+  //     },
+  //     start: {
+  //       dateTime: "2024-08-02T09:00:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     end: {
+  //       dateTime: "2024-08-02T17:00:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     iCalUID: "4k6n8p0r2t4v6x8z@google.com",
+  //     sequence: 0,
+  //     reminders: {
+  //       useDefault: false,
+  //       overrides: [
+  //         {
+  //           method: "popup",
+  //           minutes: 60
+  //         }
+  //       ]
+  //     },
+  //     eventType: "default"
+  //   },
+  //   {
+  //     kind: "calendar#event",
+  //     etag: "\"3375461728374004\"",
+  //     id: "5l7n9p1r3t5v7x9z",
+  //     status: "confirmed",
+  //     htmlLink: "https://www.google.com/calendar/event?eid=5l7n9p1r3t5v7x9z",
+  //     created: "2024-07-29T13:00:00.000Z",
+  //     updated: "2024-07-29T13:00:00.000Z",
+  //     summary: "Product Demo",
+  //     description: "Demo of new product features",
+  //     creator: {
+  //       email: "product@example.com",
+  //       self: false
+  //     },
+  //     organizer: {
+  //       email: "product@example.com",
+  //       self: false
+  //     },
+  //     start: {
+  //       dateTime: "2024-08-02T15:00:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     end: {
+  //       dateTime: "2024-08-02T16:00:00+00:00",
+  //       timeZone: "UTC"
+  //     },
+  //     iCalUID: "5l7n9p1r3t5v7x9z@google.com",
+  //     sequence: 0,
+  //     reminders: {
+  //       useDefault: true
+  //     },
+  //     eventType: "default"
+  //   }
+  // ];
   return <KalendarApp events={events} />;
 }
