@@ -1,10 +1,45 @@
 export interface Event {
-  id: number;
-  title: string;
-  day: number;
-  start: number;
-  duration: number;
-  color: string;
+  kind: string;
+  etag: string;
+  id: string;
+  status: string;
+  htmlLink: string;
+  created: string;
+  updated: string;
+  summary: string;
+  description?: string;
+  creator: {
+    email: string;
+    self: boolean;
+  };
+  organizer: {
+    email: string;
+    self: boolean;
+  };
+  start: {
+    dateTime: string;
+    timeZone: string;
+  };
+  end: {
+    dateTime: string;
+    timeZone: string;
+  };
+  recurringEventId?: string;
+  originalStartTime?: {
+    dateTime: string;
+    timeZone: string;
+  };
+  iCalUID: string;
+  sequence: number;
+  reminders: {
+    useDefault: boolean;
+    overrides?: Array<{
+      method: string;
+      minutes: number;
+    }>;
+  };
+  eventType: string;
+  guestsCanModify?: boolean;
 }
   
   export interface UserPreferences {
