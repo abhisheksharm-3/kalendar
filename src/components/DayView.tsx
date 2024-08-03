@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Event } from '@/lib/types';
 import { motion } from 'framer-motion';
+import EventDetailsModal from './EventDetailModal';
 
 interface DayViewProps {
   currentDate: Date;
@@ -11,6 +12,8 @@ interface DayViewProps {
 
 const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
   const [date, setDate] = useState(currentDate);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const timeSlots = Array.from({ length: 24 }, (_, i) => i);
 
   useEffect(() => {
@@ -36,8 +39,8 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
   const getEventStyle = (event: Event) => {
     const startDate = new Date(event.start.dateTime);
     const endDate = new Date(event.end.dateTime);
-    const top = `${startDate.getHours() * 60 + startDate.getMinutes()}px`;
-    const height = `${(endDate.getTime() - startDate.getTime()) / (60 * 1000)}px`;
+    const top = `${(startDate.getHours() * 60 + startDate.getMinutes()) * 2 + 4}px`;
+    const height = `${((endDate.getTime() - startDate.getTime()) / (30 * 1000)) - 8}px`;
     return { top, height };
   };
 
@@ -59,21 +62,25 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
     ];
     return colors[Math.floor(Math.random() * colors.length)];
   };
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEventModalOpen(true);
+  };
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 rounded-lg shadow-lg">
       <div className="flex-grow overflow-auto scrollbar-hide scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
         <div className="flex">
-          <div className="w-20 flex-shrink-0 border-r dark:border-gray-700">
+          <div className="w-24 flex-shrink-0 border-r dark:border-gray-700">
             {timeSlots.map((hour) => (
-              <div key={hour} className="h-[60px] text-right pr-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+              <div key={hour} className="h-[120px] text-right pr-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 {formatTime(hour)}
               </div>
             ))}
           </div>
           <div className="flex-grow relative">
             {timeSlots.map((hour) => (
-              <div key={hour} className="h-[60px] border-b dark:border-gray-700 relative">
+              <div key={hour} className="h-[120px] border-b dark:border-gray-700 relative">
                 <div className="absolute left-0 w-full h-px bg-gray-200 dark:bg-gray-700" style={{ top: '50%' }}></div>
               </div>
             ))}
@@ -87,8 +94,9 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className={`absolute left-1 right-1 ${eventColor} text-white p-2 text-xs overflow-hidden rounded-lg shadow-md`}
+                  className={`absolute left-2 right-2 hover:brightness-90 duration-300 cursor-pointer ${eventColor} text-white p-2 text-xs overflow-hidden rounded-lg shadow-md`}
                   style={getEventStyle(event)}
+                  onClick={() => handleEventClick(event)}
                 >
                   <div className="font-bold truncate">{event.summary}</div>
                   <div className="text-xs opacity-80">{formatTime(startDate.getHours())} - {formatTime(endDate.getHours())}</div>
@@ -98,6 +106,11 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
           </div>
         </div>
       </div>
+      <EventDetailsModal
+        isOpen={isEventModalOpen}
+        onOpenChange={setIsEventModalOpen}
+        event={selectedEvent}
+      />
     </div>
   );
 };
