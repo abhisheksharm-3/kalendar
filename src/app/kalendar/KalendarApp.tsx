@@ -6,10 +6,11 @@ import DayView from '@/components/DayView';
 import MonthView from '@/components/MonthView';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight, Menu, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, Plus, Search, X } from "lucide-react";
 import { Event } from '@/lib/types';
 import { RiCalendarLine } from '@remixicon/react';
 import { AnimatePresence, motion } from 'framer-motion';
+import EventCreationModal from '@/components/CreateEvent';
 
 interface KalendarAppProps {
   events: Event[];
@@ -20,6 +21,8 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
   const [filteredEvents, setFilteredEvents] = useState<Event[]>(events);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [newEvent, setNewEvent] = useState<Event[]>(events);
 
   useEffect(() => {
     if (date) {
@@ -58,6 +61,28 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
     });
 
     setFilteredEvents(filtered);
+  };
+
+  const handleCreateEvent = async (newEvent: any) => {
+    try {
+      const response = await fetch('/api/user/calendar/googlecalendar/createEvent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newEvent),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create event');
+      }
+
+      const createdEvent = await response.json();
+      setNewEvent([...events, createdEvent]);
+    } catch (error) {
+      console.error('Error creating event:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
   };
 
   const goToPrevious = () => {
@@ -122,7 +147,13 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile Header */}
-        <div className="md:hidden flex justify-between items-center p-4 bg-gray-800 text-white">
+        <div className="md:hidden flex justify-between items-center p-4 bg-gray-800 text-white"><Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          <Menu className="h-6 w-6" />
+        </Button>
           <div className="flex items-center">
             <RiCalendarLine className="text-purple-500 mr-2 text-2xl" />
             <p className="font-bold text-xl">Kalendar AI</p>
@@ -130,18 +161,21 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            onClick={() => setIsEventModalOpen(true)}
           >
-            <Menu className="h-6 w-6" />
+            <Plus className="h-6 w-6" />
           </Button>
         </div>
 
         {/* Desktop Header */}
         <div className="hidden md:flex justify-between items-center p-[22px] bg-gray-800 text-white">
-          <h1 className="text-2xl font-bold">Kalendar AI</h1>
+        <div className="flex items-center">
+            <RiCalendarLine className="text-purple-500 mr-2 text-2xl" />
+            <p className="font-bold text-xl">Kalendar AI</p>
+          </div>
           <div className="flex items-center space-x-4">
             <Input className="w-64" placeholder="Search" />
-            <Button variant="outline">New Event</Button>
+            <Button variant="outline" onClick={() => setIsEventModalOpen(true)}>New Event</Button>
           </div>
         </div>
 
@@ -153,25 +187,25 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
                 <Button variant="outline" size="icon" onClick={goToPrevious}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h2 className="text-xl font-bold">{formatDateHeader()}</h2>
+                <h2 className="text-lg lg:text-xl font-bold">{formatDateHeader()}</h2>
                 <Button variant="outline" size="icon" onClick={goToNext}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
-                <Button 
+                <Button
                   variant={view === 'day' ? "default" : "outline"}
                   onClick={() => setView('day')}
                 >
                   Day
                 </Button>
-                <Button 
+                <Button
                   variant={view === 'week' ? "default" : "outline"}
                   onClick={() => setView('week')}
                 >
                   Week
                 </Button>
-                <Button 
+                <Button
                   variant={view === 'month' ? "default" : "outline"}
                   onClick={() => setView('month')}
                 >
@@ -186,7 +220,7 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
           </div>
           {view === 'day' && date && <DayView currentDate={date} events={filteredEvents} />}
           {view === 'week' && date && <WeekView currentDate={date} events={filteredEvents} />}
-          {view === 'month' && date && <MonthView currentDate={date} events={events}/>}
+          {view === 'month' && date && <MonthView currentDate={date} events={events} />}
         </div>
       </div>
 
@@ -225,6 +259,11 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
           </motion.div>
         )}
       </AnimatePresence>
+      <EventCreationModal
+        isOpen={isEventModalOpen}
+        onOpenChange={setIsEventModalOpen}
+        onCreateEvent={handleCreateEvent}
+      />
     </div>
   );
 };

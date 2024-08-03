@@ -273,5 +273,6 @@ export default function KalendarPage() {
   //     eventType: "default"
   //   }
   // ];
+
   return <KalendarApp events={events} />;
 }

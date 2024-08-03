@@ -192,7 +192,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate, events, onClos
                 exit={{ opacity: 0, y: -20 }}
                 className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"
               >
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">AI Insights</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">KAI Insights</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{aiSummary}</p>
               </motion.div>
             )}

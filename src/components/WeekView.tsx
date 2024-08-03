@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Event } from '@/lib/types';
 import { motion } from 'framer-motion';
+import EventDetailsModal from './EventDetailModal';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -13,9 +14,11 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
   const [date, setDate] = useState(currentDate);
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   
   const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  const timeSlots = Array.from({ length: 24 }, (_, i) => i); // 0 to 23 hours
+  const timeSlots = Array.from({ length: 24 }, (_, i) => i);
 
   useEffect(() => {
     setDate(currentDate);
@@ -23,10 +26,10 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768); // Adjust this breakpoint as needed
+      setIsMobile(window.innerWidth < 768);
     };
 
-    handleResize(); // Initial check
+    handleResize();
     window.addEventListener('resize', handleResize);
 
     return () => {
@@ -63,15 +66,15 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
     return `${weekDays[date.getDay()]} ${date.getDate()}`;
   };
 
-  const formatTime = (hour: number) => {
-    return `${hour % 12 || 12} ${hour >= 12 ? 'PM' : 'AM'}`;
+  const formatTime = (hour: number, minute: number = 0) => {
+    return `${hour % 12 || 12}:${minute.toString().padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
   };
 
   const getEventStyle = (event: Event) => {
     const startDate = new Date(event.start.dateTime);
     const endDate = new Date(event.end.dateTime);
-    const top = `${startDate.getHours() * 60 + startDate.getMinutes()}px`;
-    const height = `${(endDate.getTime() - startDate.getTime()) / (60 * 1000)}px`;
+    const top = `${(startDate.getHours() * 60 + startDate.getMinutes()) * 2 + 4}px`;
+    const height = `${((endDate.getTime() - startDate.getTime()) / (30 * 1000)) - 8}px`;
     return { top, height };
   };
 
@@ -85,6 +88,11 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
       'bg-indigo-500',
     ];
     return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEventModalOpen(true);
   };
 
   return (
@@ -104,7 +112,7 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
         <div className={`grid ${isMobile ? 'grid-cols-4' : 'grid-cols-8'} h-full`}>
           <div className="col-span-1 border-r dark:border-gray-700">
             {timeSlots.map((hour) => (
-              <div key={hour} className="h-[60px] text-right pr-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+              <div key={hour} className="h-[120px] text-right pr-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 {formatTime(hour)}
               </div>
             ))}
@@ -118,7 +126,7 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
                   </div>
                   <div className="relative">
                     {timeSlots.map((hour) => (
-                      <div key={hour} className="h-[60px] border-b dark:border-gray-700 relative">
+                      <div key={hour} className="h-[120px] border-b dark:border-gray-700 relative">
                         <div className="absolute left-0 w-full h-px bg-gray-200 dark:bg-gray-700" style={{ top: '50%' }}></div>
                       </div>
                     ))}
@@ -129,6 +137,8 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
                       })
                       .map((event, eventIndex) => {
                         const eventColor = getEventColor(event);
+                        const startDate = new Date(event.start.dateTime);
+                        const endDate = new Date(event.end.dateTime);
                         return (
                           <motion.div
                             key={event.id}
@@ -137,10 +147,11 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
                             transition={{ duration: 0.3, delay: eventIndex * 0.1 }}
                             className={`absolute left-1 right-1 ${eventColor} text-white p-2 text-xs overflow-hidden rounded-lg shadow-md`}
                             style={getEventStyle(event)}
+                            onClick={() => handleEventClick(event)}
                           >
-                            <div className="font-bold truncate">{event.summary}</div>
+                            <div className="font-bold text-wrap">{event.summary}</div>
                             <div className="text-xs opacity-80">
-                              {formatTime(new Date(event.start.dateTime).getHours())} - {formatTime(new Date(event.end.dateTime).getHours())}
+                              {formatTime(startDate.getHours(), startDate.getMinutes())} - {formatTime(endDate.getHours(), endDate.getMinutes())}
                             </div>
                           </motion.div>
                         );
@@ -152,6 +163,11 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
           </div>
         </div>
       </div>
+      <EventDetailsModal
+        isOpen={isEventModalOpen}
+        onOpenChange={setIsEventModalOpen}
+        event={selectedEvent}
+      />
     </div>
   );
 };
