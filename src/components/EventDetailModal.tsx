@@ -55,15 +55,6 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
             <p className="text-sm">{event.description}</p>
           </motion.div>
         )}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
-        >
-          <User className="w-6 h-6 text-primary" />
-          <p>Organizer: {event.organizer.email}</p>
-        </motion.div>
       </div>
     </motion.div>
   );
