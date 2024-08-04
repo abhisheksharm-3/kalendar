@@ -114,11 +114,11 @@ export default function KalendarPage() {
   //       self: true
   //     },
   //     start: {
-  //       dateTime: "2024-08-01T09:00:00+00:00",
+  //       dateTime: "2024-08-04T09:00:00+00:00",
   //       timeZone: "UTC"
   //     },
   //     end: {
-  //       dateTime: "2024-08-01T09:30:00+00:00",
+  //       dateTime: "2024-08-04T09:30:00+00:00",
   //       timeZone: "UTC"
   //     },
   //     iCalUID: "1h3k5m7n9p2r4t6v@google.com",
@@ -147,11 +147,11 @@ export default function KalendarPage() {
   //       self: false
   //     },
   //     start: {
-  //       dateTime: "2024-08-01T14:00:00+00:00",
+  //       dateTime: "2024-08-04T14:00:00+00:00",
   //       timeZone: "UTC"
   //     },
   //     end: {
-  //       dateTime: "2024-08-01T15:30:00+00:00",
+  //       dateTime: "2024-08-04T15:30:00+00:00",
   //       timeZone: "UTC"
   //     },
   //     iCalUID: "2i4l6o8q1s3u5w7y@google.com",

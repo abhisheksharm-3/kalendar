@@ -19,49 +19,9 @@ interface KalendarAppProps {
 const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>(events);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState<Event[]>(events);
-
-  useEffect(() => {
-    if (date) {
-      filterEventsByDate();
-    }
-  }, [date, view, events]);
-
-  const filterEventsByDate = () => {
-    if (!date) return;
-
-    let timeMin: string, timeMax: string;
-    switch (view) {
-      case 'day':
-        timeMin = new Date(new Date(date).setHours(0, 0, 0, 0)).toISOString();
-        timeMax = new Date(new Date(date).setHours(23, 59, 59, 999)).toISOString();
-        break;
-      case 'week':
-        const startOfWeek = new Date(date);
-        startOfWeek.setDate(date.getDate() - date.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        timeMin = new Date(startOfWeek.setHours(0, 0, 0, 0)).toISOString();
-        timeMax = new Date(endOfWeek.setHours(23, 59, 59, 999)).toISOString();
-        break;
-      case 'month':
-        const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-        timeMin = new Date(startOfMonth.setHours(0, 0, 0, 0)).toISOString();
-        timeMax = new Date(endOfMonth.setHours(23, 59, 59, 999)).toISOString();
-        break;
-    }
-
-    const filtered = events.filter(event => {
-      const eventStart = new Date(event.start.dateTime).toISOString();
-      return eventStart >= timeMin && eventStart <= timeMax;
-    });
-
-    setFilteredEvents(filtered);
-  };
 
   const handleCreateEvent = async (newEvent: any) => {
     try {
@@ -218,8 +178,8 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
               <Input className="pl-8 w-full" placeholder="Search" />
             </div>
           </div>
-          {view === 'day' && date && <DayView currentDate={date} events={filteredEvents} />}
-          {view === 'week' && date && <WeekView currentDate={date} events={filteredEvents} />}
+          {view === 'day' && date && <DayView currentDate={date} events={events} />}
+          {view === 'week' && date && <WeekView currentDate={date} events={events} />}
           {view === 'month' && date && <MonthView currentDate={date} events={events} />}
         </div>
       </div>
