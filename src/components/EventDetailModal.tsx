@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { format } from 'date-fns';
 import { Event } from '@/lib/types';
 import { Clock, Calendar, MapPin, User, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface EventDetailsModalProps {
   isOpen: boolean;
@@ -25,52 +26,54 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
   };
 
   const ModalContent = () => (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{event.summary}</h2>
-      <div className="space-y-2">
-        <div className="flex items-center space-x-2">
-          <Clock className="w-5 h-5 text-gray-500" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
+      <h2 className="text-3xl font-bold text-primary">{event.summary}</h2>
+      <div className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
+        >
+          <Clock className="w-6 h-6 text-primary" />
           <p>{formatDateTime(event.start.dateTime)} - {formatDateTime(event.end.dateTime)}</p>
-        </div>
+        </motion.div>
         {event.description && (
-          <div className="flex items-start space-x-2">
-            <Info className="w-5 h-5 text-gray-500 mt-1" />
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
+          >
+            <Info className="w-6 h-6 text-primary mt-1" />
             <p className="text-sm">{event.description}</p>
-          </div>
+          </motion.div>
         )}
-        <div className="flex items-center space-x-2">
-          <User className="w-5 h-5 text-gray-500" />
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
+        >
+          <User className="w-6 h-6 text-primary" />
           <p>Organizer: {event.organizer.email}</p>
-        </div>
-        {/* {event.attendees && (
-          <div className="flex items-start space-x-2">
-            <User className="w-5 h-5 text-gray-500 mt-1" />
-            <div>
-              <p className="font-semibold">Attendees:</p>
-              <ul className="list-disc list-inside">
-                {event.attendees.map((attendee, index) => (
-                  <li key={index} className="text-sm">{attendee.email}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-        {event.recurrence && (
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-5 h-5 text-gray-500" />
-            <p>Recurring event</p>
-          </div>
-        )} */}
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[550px] p-6 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
           <DialogHeader>
-            <DialogTitle>Event Details</DialogTitle>
+            <DialogTitle className="sr-only">Event Details</DialogTitle>
           </DialogHeader>
           <ModalContent />
         </DialogContent>
@@ -81,14 +84,14 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
       <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Event Details</DrawerTitle>
+        <DrawerHeader className="text-left border-b pb-4">
+          <DrawerTitle className="text-2xl font-bold text-primary">Event Details</DrawerTitle>
         </DrawerHeader>
-        <div className="p-4 pb-0">
+        <div className="p-6">
           <ModalContent />
         </div>
         <DrawerClose asChild>
-          <Button variant="outline" className="mx-4 mb-4 mt-6">Close</Button>
+          <Button variant="outline" className="mx-auto mb-6">Close</Button>
         </DrawerClose>
       </DrawerContent>
     </Drawer>
