@@ -22,7 +22,31 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState<Event[]>(events);
+  const goToToday = () => {
+    setDate(new Date());
+  };
 
+  const handleEventUpdate = async (updatedEvent: Event) => {
+    try {
+      const response = await fetch('/api/user/calendar/googlecalendar/updateEvent', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedEvent),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update event');
+      }
+
+      const updatedEventData = await response.json();
+      setNewEvent(events.map(event => event.id === updatedEventData.id ? updatedEventData : event));
+    } catch (error) {
+      console.error('Error updating event:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
   const handleCreateEvent = async (newEvent: any) => {
     try {
       const response = await fetch('/api/user/calendar/googlecalendar/createEvent', {
@@ -129,11 +153,12 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
 
         {/* Desktop Header */}
         <div className="hidden md:flex justify-between items-center p-[22px] bg-gray-800 text-white">
-        <div className="flex items-center">
+          <div className="flex items-center">
             <RiCalendarLine className="text-purple-500 mr-2 text-2xl" />
             <p className="font-bold text-xl">Kalendar AI</p>
           </div>
           <div className="flex items-center space-x-4">
+            <Button variant="outline" onClick={goToToday}>Today</Button>
             <Input className="w-64" placeholder="Search" />
             <Button variant="outline" onClick={() => setIsEventModalOpen(true)}>New Event</Button>
           </div>
@@ -178,8 +203,8 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
               <Input className="pl-8 w-full" placeholder="Search" />
             </div>
           </div>
-          {view === 'day' && date && <DayView currentDate={date} events={events} />}
-          {view === 'week' && date && <WeekView currentDate={date} events={events} />}
+          {view === 'day' && date && <DayView currentDate={date} events={events} onEventUpdate={handleEventUpdate} />}
+          {view === 'week' && date && <WeekView currentDate={date} events={events} onEventUpdate={handleEventUpdate} />}
           {view === 'month' && date && <MonthView currentDate={date} events={events} />}
         </div>
       </div>

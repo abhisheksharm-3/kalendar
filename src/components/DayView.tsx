@@ -1,36 +1,24 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Event } from '@/lib/types';
-import { motion } from 'framer-motion';
 import EventDetailsModal from './EventDetailModal';
 
 interface DayViewProps {
   currentDate: Date;
   events: Event[];
+  onEventUpdate: (updatedEvent: Event) => void;
 }
 
-const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
+const DayView: React.FC<DayViewProps> = ({ currentDate, events, onEventUpdate }) => {
   const [date, setDate] = useState(currentDate);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const timeSlots = Array.from({ length: 24 }, (_, i) => i);
 
   useEffect(() => {
     setDate(currentDate);
   }, [currentDate]);
-
-  const goToPreviousDay = () => {
-    const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() - 1);
-    setDate(newDate);
-  };
-
-  const goToNextDay = () => {
-    const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() + 1);
-    setDate(newDate);
-  };
 
   const formatTime = (hour: number) => {
     return `${hour % 12 || 12} ${hour >= 12 ? 'PM' : 'AM'}`;
@@ -62,9 +50,48 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
     ];
     return colors[Math.floor(Math.random() * colors.length)];
   };
+
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
     setIsEventModalOpen(true);
+  };
+
+  const handleDragStart = (e: React.DragEvent, event: Event) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify(event));
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const draggedEvent: Event = JSON.parse(e.dataTransfer.getData('text/plain'));
+    
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const minutes = Math.floor(y / 2) * 30;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+  
+    const newStartDate = new Date(date);
+    newStartDate.setHours(hours, remainingMinutes);
+  
+    const duration = new Date(draggedEvent.end.dateTime).getTime() - new Date(draggedEvent.start.dateTime).getTime();
+    const newEndDate = new Date(newStartDate.getTime() + duration);
+  
+    const updatedEvent: Event = {
+      ...draggedEvent,
+      start: { ...draggedEvent.start, dateTime: newStartDate.toISOString() },
+      end: { ...draggedEvent.end, dateTime: newEndDate.toISOString() },
+    };
+  
+    onEventUpdate(updatedEvent);
+  };
+  const handleDragEnd = () => {
+    setIsDragging(false);
   };
 
   return (
@@ -78,7 +105,11 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
               </div>
             ))}
           </div>
-          <div className="flex-grow relative">
+          <div 
+            className="flex-grow relative"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
             {timeSlots.map((hour) => (
               <div key={hour} className="h-[120px] border-b dark:border-gray-700 relative">
                 <div className="absolute left-0 w-full h-px bg-gray-200 dark:bg-gray-700" style={{ top: '50%' }}></div>
@@ -89,18 +120,18 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, events }) => {
               const endDate = new Date(event.end.dateTime);
               const eventColor = getEventColor(event);
               return (
-                <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className={`absolute left-2 right-2 hover:brightness-90 duration-300 cursor-pointer ${eventColor} text-white p-2 text-xs overflow-hidden rounded-lg shadow-md`}
-                  style={getEventStyle(event)}
-                  onClick={() => handleEventClick(event)}
-                >
+                <div
+  key={event.id}
+  className={`absolute left-2 right-2 hover:brightness-90 duration-300 cursor-move ${eventColor} text-white p-2 text-xs overflow-hidden rounded-lg shadow-md ${isDragging ? 'opacity-50' : ''}`}
+  style={getEventStyle(event)}
+  onClick={() => handleEventClick(event)}
+  draggable
+  onDragStart={(e) => handleDragStart(e, event)}
+  onDragEnd={handleDragEnd}
+>
                   <div className="font-bold truncate">{event.summary}</div>
                   <div className="text-xs opacity-80">{formatTime(startDate.getHours())} - {formatTime(endDate.getHours())}</div>
-                </motion.div>
+                </div>
               );
             })}
           </div>

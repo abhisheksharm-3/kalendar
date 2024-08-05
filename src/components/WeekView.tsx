@@ -2,16 +2,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Event } from "@/lib/types";
-import { motion } from "framer-motion";
 import EventDetailsModal from "./EventDetailModal";
 
 interface WeekViewProps {
   currentDate: Date;
   events: Event[];
+  onEventUpdate: (updatedEvent: Event) => void;
 }
 
-const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
+const WeekView: React.FC<WeekViewProps> = ({ currentDate, events, onEventUpdate }) => {
   const [date, setDate] = useState(currentDate);
+  const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -22,6 +23,43 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
   useEffect(() => {
     setDate(currentDate);
   }, [currentDate]);
+
+  const handleDragStart = (e: React.DragEvent, event: Event) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify(event));
+    setIsDragging(true);
+  };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, dropDate: Date) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const draggedEvent: Event = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const minutes = Math.floor(y / 2) * 30;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    const newStartDate = new Date(dropDate);
+    newStartDate.setHours(hours, remainingMinutes);
+
+    const duration = new Date(draggedEvent.end.dateTime).getTime() - new Date(draggedEvent.start.dateTime).getTime();
+    const newEndDate = new Date(newStartDate.getTime() + duration);
+
+    const updatedEvent: Event = {
+      ...draggedEvent,
+      start: { ...draggedEvent.start, dateTime: newStartDate.toISOString() },
+      end: { ...draggedEvent.end, dateTime: newEndDate.toISOString() },
+    };
+
+    onEventUpdate(updatedEvent);
+  };
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
 
   const goToPreviousWeek = () => {
     const newDate = new Date(date);
@@ -53,20 +91,17 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
   };
 
   const formatTime = (hour: number, minute: number = 0) => {
-    return `${hour % 12 || 12}:${minute.toString().padStart(2, "0")} ${
-      hour >= 12 ? "PM" : "AM"
-    }`;
+    return `${hour % 12 || 12}:${minute.toString().padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"
+      }`;
   };
 
   const getEventStyle = (event: Event) => {
     const startDate = new Date(event.start.dateTime);
     const endDate = new Date(event.end.dateTime);
-    const top = `${
-      (startDate.getHours() * 60 + startDate.getMinutes()) * 2 + 4
-    }px`;
-    const height = `${
-      (endDate.getTime() - startDate.getTime()) / (30 * 1000) - 8
-    }px`;
+    const top = `${(startDate.getHours() * 60 + startDate.getMinutes()) * 2 + 4
+      }px`;
+    const height = `${(endDate.getTime() - startDate.getTime()) / (30 * 1000) - 8
+      }px`;
     return { top, height };
   };
 
@@ -128,7 +163,8 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
                   <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 p-2 text-center border-b dark:border-gray-700 font-semibold">
                     {formatDateHeader(date)}
                   </div>
-                  <div className="relative">
+                  <div className="relative" onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, date)}>
                     {timeSlots.map((hour) => (
                       <div
                         key={hour}
@@ -150,17 +186,14 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
                         const startDate = new Date(event.start.dateTime);
                         const endDate = new Date(event.end.dateTime);
                         return (
-                          <motion.div
+                          <div
                             key={event.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{
-                              duration: 0.3,
-                              delay: eventIndex * 0.1,
-                            }}
-                            className={`absolute left-1 right-1 ${eventColor} text-white p-2 text-xs overflow-hidden rounded-lg shadow-md`}
+                            className={`absolute left-1 right-1 ${eventColor} text-white p-2 text-xs overflow-hidden rounded-lg shadow-md cursor-move ${isDragging ? 'opacity-50' : ''}`}
                             style={getEventStyle(event)}
                             onClick={() => handleEventClick(event)}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, event)}
+                            onDragEnd={handleDragEnd}
                           >
                             <div className="font-bold text-wrap">
                               {event.summary}
@@ -176,7 +209,7 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, events }) => {
                                 endDate.getMinutes()
                               )}
                             </div>
-                          </motion.div>
+                          </div>
                         );
                       })}
                   </div>
