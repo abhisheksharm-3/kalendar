@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 }
 
 async function fetchUpdatedEvents() {
-  const session = await getServerSession(auth);
+  const session = await getServerSession(authOptions);
   console.log(session)
   if (!session || !session.accessToken) {
     console.error("No valid session");
