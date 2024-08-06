@@ -30,6 +30,8 @@ async function fetchUpdatedEvents() {
       console.error("Kalendar not found");
       return;
     }
+    console.log("Calendars:", calendars);
+console.log("Kalendar ID:", kalendarId);
 
     let allEvents: Event[] = [];
     let pageToken = null;
@@ -43,6 +45,7 @@ async function fetchUpdatedEvents() {
         maxResults: 2500,
         pageToken: pageToken,
       });
+      console.log("Calendar response:", response.data);
       allEvents = allEvents.concat(response.data.items || []);
       pageToken = response.data.nextPageToken || null;
     } while (pageToken);
@@ -52,7 +55,10 @@ async function fetchUpdatedEvents() {
     if ((global as any).sendCalendarUpdate) {
       (global as any).sendCalendarUpdate();
     }
-  } catch (error) {
-    console.error("Error fetching updated events:", error);
+  } catch (error: any) {
+    console.error("Error fetching updated events:", error.message);
+    if (error.response) {
+      console.error("Error response:", error.response.data);
+    }
   }
 }

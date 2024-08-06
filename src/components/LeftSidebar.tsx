@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import UpcomingEvent from './UpcomingEvent';
 import { ChevronDown, ChevronUp, X, Calendar as CalendarIcon, Loader2, Zap, Sun } from 'lucide-react';
@@ -21,7 +21,6 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate, events, onClos
   const [isCalendarExpanded, setIsCalendarExpanded] = useState(true);
   const [aiSummary, setAiSummary] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [lastProcessedEvents, setLastProcessedEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     const now = new Date();
@@ -30,30 +29,37 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate, events, onClos
     setCurrentDay(now.toLocaleString('default', { weekday: 'long' }));
   }, []);
 
-  const getDayName = useCallback((date: Date | undefined) => {
+  useEffect(() => {
+    if (date && events.length > 0) {
+      generateAISummary();
+    } else {
+      setAiSummary('');
+    }
+  }, [date, events]);
+
+  const getDayName = (date: Date | undefined) => {
     if (!date) return '';
     return date.toLocaleString('default', { weekday: 'long' });
-  }, []);
+  };
 
-  const getEventsForSelectedDay = useCallback(() => {
+  const getEventsForSelectedDay = () => {
     if (!date) return [];
     return events.filter(event => {
       const eventDate = new Date(event.start.dateTime);
       return eventDate.toDateString() === date.toDateString();
     });
-  }, [date, events]);
+  };
 
-  const eventsForSelectedDay = useMemo(() => getEventsForSelectedDay(), [getEventsForSelectedDay]);
-
-  const generateAISummary = useCallback(async () => {
+  const generateAISummary = async () => {
     setIsLoading(true);
+    const eventsForDay = getEventsForSelectedDay();
     try {
       const response = await fetch('/api/ai/summary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ events: eventsForSelectedDay }),
+        body: JSON.stringify({ events: eventsForDay }),
       });
   
       if (!response.ok) {
@@ -61,26 +67,16 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ date, setDate, events, onClos
       }
   
       const insights = await response.json();
-      setAiSummary(insights.join(' '));
-      setLastProcessedEvents(eventsForSelectedDay);
+      setAiSummary(insights.join(' ')); // Directly use the returned insights array
     } catch (error) {
       console.error("Error generating AI summary:", error);
       setAiSummary("Unable to generate AI summary at this time.");
     } finally {
       setIsLoading(false);
     }
-  }, [eventsForSelectedDay]);
+  };
 
-  useEffect(() => {
-    if (date && eventsForSelectedDay.length > 0 && 
-        (eventsForSelectedDay.length !== lastProcessedEvents.length || 
-         eventsForSelectedDay.some((event, index) => event.id !== lastProcessedEvents[index]?.id))) {
-      generateAISummary();
-    } else if (eventsForSelectedDay.length === 0) {
-      setAiSummary('');
-      setLastProcessedEvents([]);
-    }
-  }, [date, eventsForSelectedDay, lastProcessedEvents, generateAISummary]);
+  const eventsForSelectedDay = getEventsForSelectedDay();
 
   const NoEventsMessage = () => (
     <motion.div

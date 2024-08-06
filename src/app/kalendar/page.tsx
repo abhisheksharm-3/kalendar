@@ -13,32 +13,43 @@ export default function KalendarPage() {
   const { data: session, status } = useSession();
   const [events, setEvents] = useState<Event[]>([]);
 
-  const fetchEvents = useCallback(async (accessToken: string) => {
+  const fetchEvents = useCallback(async () => {
+    if (!session?.accessToken) {
+      console.error('No access token available');
+      return;
+    }
     try {
       const response = await axios.get('/api/user/calendar/googlecalendar/userevents', {
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${session.accessToken}` }
       });
       setEvents(response.data);
       console.log('Events fetched:', response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  }, []);
+  }, [session]);
 
   const setupWebhook = useCallback(async () => {
+    if (!session?.accessToken) {
+      console.error('No access token available');
+      return;
+    }
     try {
-      const response = await fetch('/api/webhooks/setupgooglecalendarwebhook', { method: 'POST' });
+      const response = await fetch('/api/webhooks/setupgooglecalendarwebhook', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.accessToken}` }
+      });
       const data = await response.json();
       console.log('Webhook set up successfully:', data);
     } catch (error) {
       console.error('Error setting up webhook:', error);
     }
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     if (session?.accessToken) {
       setupWebhook();
-      fetchEvents(session.accessToken);
+      fetchEvents();
     }
   }, [session, setupWebhook, fetchEvents]);
 
@@ -51,7 +62,7 @@ export default function KalendarPage() {
       const data = JSON.parse(event.data);
       if (data.type === 'calendar-update') {
         console.log('Received calendar update');
-        fetchEvents(session.accessToken);
+        fetchEvents();
       }
     };
 
@@ -68,7 +79,7 @@ export default function KalendarPage() {
   useEffect(() => {
     const handleWebhookUpdate = () => {
       if (session?.accessToken) {
-        fetchEvents(session.accessToken);
+        fetchEvents();
       }
     };
 

@@ -61,6 +61,8 @@ export async function GET(req: NextRequest) {
       allEvents = allEvents.concat(response.data.items);
       pageToken = response.data.nextPageToken;
     } while (pageToken);
+    console.log(allEvents);
+    
 
     return new Response(JSON.stringify(allEvents), {
       status: 200,
