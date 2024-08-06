@@ -23,13 +23,13 @@ export async function GET(req: NextRequest) {
     // Check if "kalendar" exists
     const calendarListResponse = await calendar.calendarList.list();
     const calendars = calendarListResponse.data.items;
-    let kalendarId = calendars?.find(cal => cal.summary === "kalendar")?.id;
+    let kalendarId = calendars?.find(cal => cal.summary === "Kalendar")?.id;
 
     // If "kalendar" doesn't exist, create it
     if (!kalendarId) {
       const newCalendar = await calendar.calendars.insert({
         requestBody: {
-          summary: "kalendar",
+          summary: "Kalendar",
           timeZone: "IST",
           description: "A calendar for all your events by Kalendar",
         }

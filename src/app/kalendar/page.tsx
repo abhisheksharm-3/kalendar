@@ -37,7 +37,11 @@ export default function KalendarPage() {
     try {
       const response = await fetch('/api/webhooks/setupgooglecalendarwebhook', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${session.accessToken}` }
+        headers: { 
+          'Authorization': `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ accessToken: session.accessToken })
       });
       const data = await response.json();
       console.log('Webhook set up successfully:', data);
@@ -48,8 +52,8 @@ export default function KalendarPage() {
 
   useEffect(() => {
     if (session?.accessToken) {
-      setupWebhook();
       fetchEvents();
+      setupWebhook();
     }
   }, [session, setupWebhook, fetchEvents]);
 

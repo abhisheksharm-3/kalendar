@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 
 export async function POST(request: Request) {
+  
   const headers = request.headers;
   console.log("Webhook headers:", headers);
   await fetchUpdatedEvents();
@@ -11,7 +12,8 @@ export async function POST(request: Request) {
 }
 
 async function fetchUpdatedEvents() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(request);
+  console.log(session)
   if (!session || !session.accessToken) {
     console.error("No valid session");
     return;
@@ -24,7 +26,7 @@ async function fetchUpdatedEvents() {
   try {
     const calendarListResponse = await calendar.calendarList.list();
     const calendars = calendarListResponse.data.items;
-    const kalendarId = calendars?.find((cal) => cal.summary === "kalendar")?.id;
+    const kalendarId = calendars?.find((cal) => cal.summary === "Kalendar")?.id;
 
     if (!kalendarId) {
       console.error("Kalendar not found");
@@ -32,6 +34,7 @@ async function fetchUpdatedEvents() {
     }
     console.log("Calendars:", calendars);
 console.log("Kalendar ID:", kalendarId);
+console.log("i reached here")
 
     let allEvents: Event[] = [];
     let pageToken = null;

@@ -19,9 +19,24 @@ export async function PUT(request: Request) {
     auth.setCredentials({ access_token: session.accessToken });
 
     const calendar = google.calendar({ version: 'v3', auth });
+ // List all calendars
+ const calendarList = await calendar.calendarList.list();
+ const calendars = calendarList.data.items;
+ 
+ if (!calendars) {
+   return NextResponse.json({ message: 'No calendars found' }, { status: 404 });
+ }
 
-    const result = await calendar.events.update({
-      calendarId: 'primary',
+ // Find the calendar with the specified summary
+ const targetCalendar = calendars.find(cal => cal.summary === 'Kalendar');
+
+ if (!targetCalendar) {
+   return NextResponse.json({ message: 'Calendar not found' }, { status: 404 });
+ }
+
+ // Use the calendarId of the found calendar
+ const result = await calendar.events.update({
+   calendarId: targetCalendar.id!,
       eventId: updatedEvent.id,
       requestBody: {
         summary: updatedEvent.summary,
@@ -30,6 +45,8 @@ export async function PUT(request: Request) {
         end: updatedEvent.end,
       },
     });
+    console.log(result.data);
+    
 
     return NextResponse.json(result.data);
   } catch (error) {

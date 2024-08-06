@@ -3,6 +3,9 @@ import { google } from 'googleapis';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth"; // Adjust this import path as necessary
 
+// Define a constant for the calendar name
+const CALENDAR_NAME = "Kalendar";
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,22 +22,27 @@ export async function POST(request: Request) {
 
     const calendar = google.calendar({ version: 'v3', auth });
 
-    // Check if 'kalendar' exists, if not create it
-    let kalendarId = 'kalendar';
-    try {
-      await calendar.calendars.get({ calendarId: kalendarId });
-    } catch (error) {
-      if ((error as any).code === 404) {
-        const newCalendar = await calendar.calendars.insert({
-          requestBody: {
-            summary: "kalendar",
-            timeZone: "UTC"
-          }
-        });
-        kalendarId = newCalendar.data.id!;
-      } else {
-        throw error;
-      }
+    // Find or create the custom calendar
+    let customCalendarId: string | null = null;
+    
+    // List all calendars
+    const calendarList = await calendar.calendarList.list();
+    
+    // Find the calendar with the specified name
+    const customCalendar = calendarList.data.items?.find(cal => cal.summary === CALENDAR_NAME);
+
+    if (customCalendar) {
+      customCalendarId = customCalendar.id!;
+    } else {
+      // If the calendar doesn't exist, create it
+      const newCalendar = await calendar.calendars.insert({
+        requestBody: {
+          summary: CALENDAR_NAME,
+          timeZone: "IST",
+          description: "A calendar for all your events by Kalendar",
+        }
+      });
+      customCalendarId = newCalendar.data.id!;
     }
 
     const event = {
@@ -46,7 +54,7 @@ export async function POST(request: Request) {
     };
 
     const result = await calendar.events.insert({
-      calendarId: kalendarId,
+      calendarId: customCalendarId,
       requestBody: event,
     });
 
