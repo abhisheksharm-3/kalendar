@@ -1,14 +1,29 @@
 "use client"
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from "zod"
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { Checkbox, Textarea } from '@nextui-org/react';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+
+const eventSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  start: z.string().min(1, "Start date is required"),
+  end: z.string().min(1, "End date is required"),
+  description: z.string().optional(),
+  recurrence: z.enum(["none", "FREQ=DAILY", "FREQ=WEEKLY", "FREQ=MONTHLY"]),
+  useDefaultReminder: z.boolean(),
+  reminder: z.string().optional(),
+});
+
+type EventFormData = z.infer<typeof eventSchema>;
 
 interface EventCreationModalProps {
   isOpen: boolean;
@@ -17,26 +32,31 @@ interface EventCreationModalProps {
 }
 
 const EventCreationModal: React.FC<EventCreationModalProps> = ({ isOpen, onOpenChange, onCreateEvent }) => {
-  const [title, setTitle] = useState('');
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
-  const [description, setDescription] = useState('');
-  const [recurrence, setRecurrence] = useState('none');
-  const [reminder, setReminder] = useState('');
-  const [useDefaultReminder, setUseDefaultReminder] = useState(true);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  
+  const form = useForm<EventFormData>({
+    resolver: zodResolver(eventSchema),
+    defaultValues: {
+      title: '',
+      start: '',
+      end: '',
+      description: '',
+      recurrence: 'none',
+      useDefaultReminder: true,
+      reminder: '',
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: EventFormData) => {
     const newEvent = {
-      summary: title,
-      description,
-      start: { dateTime: new Date(start).toISOString() },
-      end: { dateTime: new Date(end).toISOString() },
-      recurrence: recurrence !== 'none' ? [`RRULE:${recurrence}`] : undefined,
+      summary: data.title,
+      description: data.description,
+      start: { dateTime: new Date(data.start).toISOString() },
+      end: { dateTime: new Date(data.end).toISOString() },
+      recurrence: data.recurrence !== 'none' ? [`RRULE:${data.recurrence}`] : undefined,
       reminders: {
-        useDefault: useDefaultReminder,
-        overrides: useDefaultReminder ? undefined : [{ method: 'popup', minutes: parseInt(reminder) }],
+        useDefault: data.useDefaultReminder,
+        overrides: data.useDefaultReminder ? undefined : [{ method: 'popup', minutes: parseInt(data.reminder || "0") }],
       },
     };
     onCreateEvent(newEvent);
@@ -44,67 +64,125 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({ isOpen, onOpenC
   };
 
   const EventForm = ({ className }: React.ComponentProps<"form">) => (
-    <form onSubmit={handleSubmit} className={cn("space-y-6", className)}>
-      <div>
-        <Label htmlFor="title" className="block text-sm font-medium mb-1">Event Title</Label>
-        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full" placeholder="Enter event title" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="start" className="block text-sm font-medium mb-1">Start Date & Time</Label>
-          <Input id="start" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} className="w-full" />
-        </div>
-        <div>
-          <Label htmlFor="end" className="block text-sm font-medium mb-1">End Date & Time</Label>
-          <Input id="end" type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} className="w-full" />
-        </div>
-      </div>
-      <div>
-        <Label htmlFor="description" className="block text-sm font-medium mb-1">Description</Label>
-        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full" placeholder="Event description" />
-      </div>
-      <div>
-        <Label htmlFor="recurrence" className="block text-sm font-medium mb-1">Recurrence</Label>
-        <Select value={recurrence} onValueChange={setRecurrence}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select recurrence" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">No recurrence</SelectItem>
-            <SelectItem value="FREQ=DAILY">Daily</SelectItem>
-            <SelectItem value="FREQ=WEEKLY">Weekly</SelectItem>
-            <SelectItem value="FREQ=MONTHLY">Monthly</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label className="block text-sm font-medium mb-1">Reminder</Label>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="useDefaultReminder"
-            isSelected={useDefaultReminder}
-            onValueChange={(checked) => setUseDefaultReminder(checked)}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className={className}>
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Event Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter event title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="start"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Start Date & Time</FormLabel>
+                <FormControl>
+                  <Input type="datetime-local" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <label htmlFor="useDefaultReminder" className="text-sm">Use default reminder</label>
-        </div>
-      </div>
-      {!useDefaultReminder && (
-        <div>
-          <Label htmlFor="reminderTime" className="block text-sm font-medium mb-1">Reminder time (minutes before event)</Label>
-          <Input
-            id="reminderTime"
-            type="number"
-            value={reminder}
-            onChange={(e) => setReminder(e.target.value)}
-            className="w-full"
-            placeholder="Enter minutes"
+          <FormField
+            control={form.control}
+            name="end"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>End Date & Time</FormLabel>
+                <FormControl>
+                  <Input type="datetime-local" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-      )}
-      <DialogFooter>
-        <Button type="submit" className="w-full">Create Event</Button>
-      </DialogFooter>
-    </form>
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Event description" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="recurrence"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Recurrence</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select recurrence" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">No recurrence</SelectItem>
+                  <SelectItem value="FREQ=DAILY">Daily</SelectItem>
+                  <SelectItem value="FREQ=WEEKLY">Weekly</SelectItem>
+                  <SelectItem value="FREQ=MONTHLY">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="useDefaultReminder"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Use default reminder</FormLabel>
+                <FormDescription>
+                  Use the default reminder settings for this event.
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+        {!form.watch('useDefaultReminder') && (
+          <FormField
+            control={form.control}
+            name="reminder"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Reminder time (minutes before event)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="Enter minutes" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        <DialogFooter>
+          <Button type="submit" className="w-full">Create Event</Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 
   if (isDesktop) {
@@ -114,7 +192,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({ isOpen, onOpenC
           <DialogHeader>
             <DialogTitle>Create New Event</DialogTitle>
           </DialogHeader>
-          <EventForm />
+          <EventForm className="space-y-6" />
         </DialogContent>
       </Dialog>
     );
@@ -129,7 +207,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({ isOpen, onOpenC
             Fill in the details for your new event.
           </DrawerDescription>
         </DrawerHeader>
-        <EventForm className="px-4" />
+        <EventForm className="px-4 space-y-6" />
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>

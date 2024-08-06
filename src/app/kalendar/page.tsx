@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession, signIn } from "next-auth/react";
 import axios from 'axios';
 import KalendarApp from './KalendarApp';
@@ -11,26 +11,89 @@ import { Event } from '@/lib/types';
 
 export default function KalendarPage() {
   const { data: session, status } = useSession();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<Event[]>([]);
 
-  useEffect(() => {
-    if (session?.accessToken) {
-      fetchEvents(session.accessToken);
+  const fetchEvents = useCallback(async () => {
+    if (!session?.accessToken) {
+      console.error('No access token available');
+      return;
     }
-  }, [session]);
-
-  const fetchEvents = async (accessToken: string) => {
     try {
       const response = await axios.get('/api/user/calendar/googlecalendar/userevents', {
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${session.accessToken}` }
       });
       setEvents(response.data);
-      console.log(response);
+      console.log('Events fetched:', response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  };
+  }, [session]);
 
+  const setupWebhook = useCallback(async () => {
+    if (!session?.accessToken) {
+      console.error('No access token available');
+      return;
+    }
+    try {
+      const response = await fetch('/api/webhooks/setupgooglecalendarwebhook', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ accessToken: session.accessToken })
+      });
+      const data = await response.json();
+      console.log('Webhook set up successfully:', data);
+    } catch (error) {
+      console.error('Error setting up webhook:', error);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.accessToken) {
+      fetchEvents();
+      setupWebhook();
+    }
+  }, [session, setupWebhook, fetchEvents]);
+
+  useEffect(() => {
+    if (!session?.accessToken) return;
+
+    const eventSource = new EventSource('/api/sse');
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'calendar-update') {
+        console.log('Received calendar update');
+        fetchEvents();
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE error:', error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [session, fetchEvents]);
+
+  useEffect(() => {
+    const handleWebhookUpdate = () => {
+      if (session?.accessToken) {
+        fetchEvents();
+      }
+    };
+
+    // Listen for webhook updates
+    window.addEventListener('calendar-update', handleWebhookUpdate);
+
+    return () => {
+      window.removeEventListener('calendar-update', handleWebhookUpdate);
+    };
+  }, [session, fetchEvents]);
   if (status === "loading") {
     return <div className="h-screen w-screen flex items-center justify-center">
       <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500"></div>

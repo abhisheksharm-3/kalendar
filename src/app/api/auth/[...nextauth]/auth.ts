@@ -1,4 +1,5 @@
 // src/app/api/auth/auth.ts (or wherever you prefer to place it)
+// https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar  past scopes
 
 import type { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google";
@@ -10,7 +11,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: "openid https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.calendarlist.readonly",
+          scope: "openid https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.app.created",
           prompt: "consent",
           access_type: "offline",
           response_type: "code"
