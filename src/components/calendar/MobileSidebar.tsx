@@ -42,7 +42,6 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose, d
           <LeftSidebar
             date={date}
             setDate={setDate}
-            events={events}
           />
         </motion.div>
       </motion.div>

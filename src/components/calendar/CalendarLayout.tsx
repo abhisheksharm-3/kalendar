@@ -13,7 +13,7 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({ children }) => {
 
   return (
     <div className='flex flex-row h-screen w-screen'>
-      <div className="hidden lg:block"><LeftSidebar events={events} date={date} setDate={setDate} /></div>
+      <div className="hidden lg:block"><LeftSidebar date={date} setDate={setDate} /></div>
       <div className="flex flex-col overflow-hidden bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100 lg:w-5/6">
         {children}
       </div>
