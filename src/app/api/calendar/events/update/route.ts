@@ -32,4 +32,3 @@ export async function PUT(request: Request) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
-export const runtime = 'edge'
