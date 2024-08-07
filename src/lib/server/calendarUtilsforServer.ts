@@ -4,7 +4,7 @@ import { google } from 'googleapis';
 const CALENDAR_NAME = "Kalendar";
 let calendarCreationLock = false;
 
-export function createGoogleCalendarClient(accessToken: string) {
+export async function createGoogleCalendarClient(accessToken: string) {
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: accessToken });
   return google.calendar({ version: 'v3', auth });
@@ -43,7 +43,7 @@ export async function getOrCreateCalendar(calendar: any): Promise<string> {
   }
 }
 
-export function handleApiError(error: unknown) {
+export async function handleApiError(error: unknown) {
   console.error('API Error:', error);
   const message = error instanceof Error ? error.message : 'An unexpected error occurred';
   return { error: message };

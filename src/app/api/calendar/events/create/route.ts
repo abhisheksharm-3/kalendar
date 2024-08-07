@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
     const { summary, location, description, start, end } = await request.json();
 
-    const calendar = createGoogleCalendarClient(session.accessToken);
+    const calendar = await createGoogleCalendarClient(session.accessToken);
     const calendarId = await getOrCreateCalendar(calendar);
 
     const result = await calendar.events.insert({

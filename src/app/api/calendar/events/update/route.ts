@@ -17,7 +17,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Bad Request: Event ID is required to update event' }, { status: 400 });
     }
 
-    const calendar = createGoogleCalendarClient(session.accessToken);
+    const calendar = await createGoogleCalendarClient(session.accessToken);
     const calendarId = await getOrCreateCalendar(calendar);
 
     const result = await calendar.events.update({
