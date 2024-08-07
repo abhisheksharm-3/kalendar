@@ -5,7 +5,6 @@ const withPWA = withPWAInit({
   dest: "public",
 });
 const nextConfig = withPWA({
-  staticPageGenerationTimeout: 1000,
 });
 
 export default nextConfig;
