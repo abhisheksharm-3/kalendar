@@ -1,71 +1,70 @@
 import { NextResponse } from "next/server";
-import { google } from "googleapis";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
-import { getAccessToken, getLoggedInUser } from "@/lib/server/appwrite";
+import { getLoggedInUser, getAccessToken } from "@/lib/server/appwrite";
+import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from "@/lib/server/calendarUtilsforServer";
 
 export async function POST(request: Request) {
-  
-  const headers = request.headers;
-  console.log("Webhook headers:", headers);
-  await fetchUpdatedEvents();
-  return new NextResponse(null, { status: 200 });
+  try {
+    console.log("Webhook headers:", request.headers);
+    await fetchUpdatedEvents();
+    return NextResponse.json({ message: "Events updated successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Error processing webhook:", error);
+    return NextResponse.json(handleApiError(error), { status: 500 });
+  }
 }
 
 async function fetchUpdatedEvents() {
-  const user = await getLoggedInUser();
-  // const session = await getServerSession(authOptions);
-  // console.log(session)
-  // if (!session || !session.accessToken) {
-  //   console.error("No valid session");
-  //   return;
-  // }
-
-  const accessToken = await getAccessToken(user?.$id || "")
-
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({ access_token: accessToken });
-  const calendar = google.calendar({ version: "v3", auth: oauth2Client });
-
   try {
-    const calendarListResponse = await calendar.calendarList.list();
-    const calendars = calendarListResponse.data.items;
-    const kalendarId = calendars?.find((cal) => cal.summary === "Kalendar")?.id;
-
-    if (!kalendarId) {
-      console.error("Kalendar not found");
-      return;
+    const user = await getLoggedInUser();
+    if (!user) {
+      throw new Error("No authenticated user found");
     }
-    console.log("Calendars:", calendars);
-console.log("Kalendar ID:", kalendarId);
-console.log("i reached here")
 
-    let allEvents: Event[] = [];
-    let pageToken = null;
+    const accessToken = await getAccessToken(user.$id);
+    if (!accessToken) {
+      throw new Error("Failed to get access token");
+    }
 
-    do {
+    const calendar = createGoogleCalendarClient(accessToken);
+    const calendarId = await getOrCreateCalendar(calendar);
+    const events = await fetchAllEvents(calendar, calendarId);
+
+    console.log("Updated events fetched successfully:", events.length);
+    triggerCalendarUpdate();
+  } catch (error) {
+    console.error("Error fetching updated events:", error);
+    throw error;
+  }
+}
+
+async function fetchAllEvents(calendar: any, calendarId: string) {
+  let allEvents: any[] = [];
+  let pageToken: string | null = null;
+
+  do {
+    try {
       const response: any = await calendar.events.list({
-        calendarId: kalendarId,
+        calendarId: calendarId,
         timeMin: new Date().toISOString(),
         singleEvents: true,
         orderBy: "startTime",
         maxResults: 2500,
         pageToken: pageToken,
       });
-      console.log("Calendar response:", response.data);
+
       allEvents = allEvents.concat(response.data.items || []);
       pageToken = response.data.nextPageToken || null;
-    } while (pageToken);
-
-    console.log("Updated events fetched successfully:", allEvents.length);
-
-    if ((global as any).sendCalendarUpdate) {
-      (global as any).sendCalendarUpdate();
+    } catch (error) {
+      console.error("Error fetching events page:", error);
+      throw error;
     }
-  } catch (error: any) {
-    console.error("Error fetching updated events:", error.message);
-    if (error.response) {
-      console.error("Error response:", error.response.data);
-    }
+  } while (pageToken);
+
+  return allEvents;
+}
+
+function triggerCalendarUpdate() {
+  if (typeof (global as any).sendCalendarUpdate === "function") {
+    (global as any).sendCalendarUpdate();
   }
 }

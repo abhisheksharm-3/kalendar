@@ -1,22 +1,25 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { getLoggedInUser } from './lib/server/appwrite'
 
-export async function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
+// Define your protected routes
+const protectedRoutes = ['/kalendar', '/settings', '/profile'];
 
-  // Define the protected path
-  const isProtectedPath = path === '/kalendar'
+export function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+
+  // Check if the current path is a protected route or starts with a protected route
+  const isProtectedPath = protectedRoutes.some(route => path === route || path.startsWith(`${route}/`));
 
   if (isProtectedPath) {
-    const user = await getLoggedInUser();
+    const userSession = request.cookies.get('user-session');
     
-    if (user) {
+
+    if (userSession) {
       // If a valid session exists, allow the request to proceed
       return NextResponse.next();
     } else {
       // If there's no valid session, redirect to login
-      return NextResponse.redirect(new URL('/user/auth', request.url));
+      return NextResponse.redirect(new URL('/sign-in', request.url));
     }
   }
 
@@ -24,7 +27,8 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
+// Update the matcher to include all your protected routes
 export const config = {
-  matcher: '/newpage',
+  // matcher: ['/kalendar/:path*', '/settings/:path*', '/profile/:path*']
+  matcher:['/temp']
 }
