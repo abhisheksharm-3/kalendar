@@ -4,26 +4,48 @@ import { Event, UserPreferences } from "./types";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-export async function getAISchedule(events: Event[], userPreferences: UserPreferences) {
+export async function getAISchedule(events: Event[], userPreferences: UserPreferences, comments: string) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  const prompt = `As an expert AI scheduler, optimize the following events considering the user's preferences:
+  const prompt = `As an expert AI scheduler, optimize the following events considering the user's preferences, if no preference optimize it to the best of your knowledge:
 
 Events: ${JSON.stringify(events)}
 User Preferences: ${JSON.stringify(userPreferences)}
+Additional Comments: ${comments}
 
-Please provide:
-1. An optimized schedule in JSON format
-2. A brief explanation of your optimization strategy (max 2 sentences)
-3. One suggestion for improving the schedule further
+Please provide your response in the following format:
+{
+  "schedule": [
+    // Optimized schedule here (array of event objects)
+  ],
+  "explanation": "Brief explanation of your optimization strategy (max 2 sentences)",
+  "suggestion": "One suggestion for improving the schedule further"
+}
 
-Ensure the JSON schedule maintains the original event structure while adjusting times and order as needed.`;
+Ensure the JSON is valid and contains all three keys: schedule, explanation, and suggestion.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
-  const text = response.text();
-  
-  return JSON.parse(text);
+  let text = response.text();
+
+  try {
+    const parsedResponse = JSON.parse(text);
+    
+    if (!parsedResponse.schedule || !parsedResponse.explanation || !parsedResponse.suggestion) {
+      throw new Error("Response is missing required fields");
+    }
+    
+    return {
+      schedule: parsedResponse.schedule,
+      explanation: parsedResponse.explanation,
+      suggestion: parsedResponse.suggestion
+    };
+  } catch (error) {
+    console.error("Error parsing AI response:", error);
+    return {
+      error: "Failed to generate a valid schedule. Please try again."
+    };
+  }
 }
 
 export async function getAIInsights(events: Event[]) {

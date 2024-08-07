@@ -25,11 +25,12 @@ export async function POST(request: Request) {
     let kalendarId = calendars?.find(cal => cal.summary === "Kalendar")?.id;
 
     if (!kalendarId) {
+      console.log("webhooks creating new calendar")
       const newCalendar = await calendar.calendars.insert({
         requestBody: {
           summary: "Kalendar",
-          timeZone: "IST",
-          description: "A calendar for all your events by Kalendar",
+          timeZone: "Asia/Kolkata",
+          description: "A calendar for all your events by Kalendar(WEBHOOKS)",
         }
       });
       kalendarId = newCalendar.data.id;

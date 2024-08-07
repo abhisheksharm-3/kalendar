@@ -8,10 +8,27 @@ import { motion } from 'framer-motion';
 import { RiRocketLine, RiEmotionLaughLine, RiRefreshLine } from "@remixicon/react";
 import { Button } from '@nextui-org/react';
 import { Event } from '@/lib/types';
+import { storeAccessToken, getLoggedInUser, getAccessToken } from '@/lib/server/appwrite';
 
 export default function KalendarPage() {
   const { data: session, status } = useSession();
   const [events, setEvents] = useState<Event[]>([]);
+
+  useEffect(() => {
+    const fetchAndStoreUser = async () => {
+      try {
+        const user = await getLoggedInUser();
+        if (user?.$id && session?.accessToken) {
+          await storeAccessToken(user.$id, session.accessToken);
+          console.log('Access token stored');
+        }
+      } catch (error) {
+        console.error('Error storing access token:', error);
+      }
+    };
+
+    fetchAndStoreUser();
+  }, [session]);
 
   const fetchEvents = useCallback(async () => {
     if (!session?.accessToken) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { google } from "googleapis";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
+import { getAccessToken, getLoggedInUser } from "@/lib/server/appwrite";
 
 export async function POST(request: Request) {
   
@@ -12,15 +13,18 @@ export async function POST(request: Request) {
 }
 
 async function fetchUpdatedEvents() {
-  const session = await getServerSession(authOptions);
-  console.log(session)
-  if (!session || !session.accessToken) {
-    console.error("No valid session");
-    return;
-  }
+  const user = await getLoggedInUser();
+  // const session = await getServerSession(authOptions);
+  // console.log(session)
+  // if (!session || !session.accessToken) {
+  //   console.error("No valid session");
+  //   return;
+  // }
+
+  const accessToken = await getAccessToken(user?.$id || "")
 
   const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({ access_token: session.accessToken });
+  oauth2Client.setCredentials({ access_token: accessToken });
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
   try {

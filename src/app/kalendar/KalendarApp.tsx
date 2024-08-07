@@ -11,7 +11,7 @@ import { Event } from '@/lib/types';
 import { RiCalendarLine } from '@remixicon/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import EventCreationModal from '@/components/CreateEvent';
-
+import AIScheduleModal from '@/components/AIScheduleModal';
 interface KalendarAppProps {
   events: Event[];
 }
@@ -22,10 +22,34 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState<Event[]>(events);
+  const [isAIScheduleModalOpen, setIsAIScheduleModalOpen] = useState(false);
   const goToToday = () => {
     setDate(new Date());
   };
+  const handleRequestSchedule = async (data: { date: string, comments?: string }) => {
+    try {
+      const response = await fetch('/api/ai/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          events, // Pass the current events
+          userPreferences: {} // You might want to fetch user preferences from somewhere
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error('Failed to get AI schedule');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting AI schedule:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
   const handleEventUpdate = async (updatedEvent: Event) => {
     try {
       const response = await fetch('/api/user/calendar/googlecalendar/updateEvent', {
@@ -139,8 +163,9 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
           <Menu className="h-6 w-6" />
         </Button>
           <div className="flex items-center">
-            <RiCalendarLine className="text-purple-500 mr-2 text-2xl" />
-            <p className="font-bold text-xl">Kalendar AI</p>
+          <Button variant="outline" onClick={() => setIsAIScheduleModalOpen(true)}>
+        Schedule with KAI
+      </Button>
           </div>
           <Button
             variant="ghost"
@@ -159,6 +184,9 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="outline" onClick={goToToday}>Today</Button>
+            <Button variant="outline" onClick={() => setIsAIScheduleModalOpen(true)}>
+        Schedule with KAI
+      </Button>
             <Input className="w-64" placeholder="Search" />
             <Button variant="outline" onClick={() => setIsEventModalOpen(true)}>New Event</Button>
           </div>
@@ -248,6 +276,11 @@ const KalendarApp: React.FC<KalendarAppProps> = ({ events }) => {
         isOpen={isEventModalOpen}
         onOpenChange={setIsEventModalOpen}
         onCreateEvent={handleCreateEvent}
+      />
+       <AIScheduleModal
+        isOpen={isAIScheduleModalOpen}
+        onOpenChange={setIsAIScheduleModalOpen}
+        onRequestSchedule={handleRequestSchedule}
       />
     </div>
   );

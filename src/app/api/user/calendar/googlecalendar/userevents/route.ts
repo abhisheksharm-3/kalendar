@@ -27,11 +27,12 @@ export async function GET(req: NextRequest) {
 
     // If "kalendar" doesn't exist, create it
     if (!kalendarId) {
+      console.log("fetch creating new calendar")
       const newCalendar = await calendar.calendars.insert({
         requestBody: {
           summary: "Kalendar",
-          timeZone: "IST",
-          description: "A calendar for all your events by Kalendar",
+          timeZone: "Asia/Kolkata",
+          description: "A calendar for all your events by Kalendar (FETCH)",
         }
       });
       kalendarId = newCalendar.data.id;
