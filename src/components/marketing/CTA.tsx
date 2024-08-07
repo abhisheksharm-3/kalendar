@@ -5,8 +5,8 @@ import { useRef } from 'react';
 import { RiRocketLine, RiRobot3Line } from "@remixicon/react";
 
 // Assume these images are available in your project
-import HelixImage from '../assets/images/helix2.png'
-import EmojiImage from '../assets/images/emojistar.png'
+import HelixImage from '@/assets/images/helix2.png';
+import EmojiImage from '@/assets/images/emojistar.png'
 
 export const CallToAction = () => {
   const containerRef = useRef<HTMLDivElement>(null);

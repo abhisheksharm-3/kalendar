@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from "react";
 import { RiAiGenerate, RiCalendarCheckLine, RiTimeLine } from "@remixicon/react";
-import appScreen from "../assets/images/product.avif";
+import appScreen from "@/assets/images/product.avif";
 
 export const ProductShowcase: React.FC = () => {
   const appImage = useRef<HTMLDivElement>(null);
