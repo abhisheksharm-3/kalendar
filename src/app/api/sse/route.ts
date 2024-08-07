@@ -1,28 +1,25 @@
 // app/api/sse/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { sseManager } from '@/lib/server/sseManager';
 
 export async function GET(req: NextRequest) {
   const encoder = new TextEncoder();
+
   const stream = new ReadableStream({
     start(controller) {
-      const send = (data: string) => {
-        controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+      const send = (event: { type: string; data?: any }) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       };
 
-      const timer = setInterval(() => {
-        send(JSON.stringify({ type: 'ping' }));
+      sseManager.addConnection(send);
+
+      const pingInterval = setInterval(() => {
+        send({ type: 'ping' });
       }, 15000);
 
-      // Function to send calendar update
-      const sendCalendarUpdate = () => {
-        send(JSON.stringify({ type: 'calendar-update' }));
-      };
-
-      // Store the sendCalendarUpdate function globally so it can be called from other parts of your application
-      (global as any).sendCalendarUpdate = sendCalendarUpdate;
-
       req.signal.addEventListener('abort', () => {
-        clearInterval(timer);
+        clearInterval(pingInterval);
+        sseManager.removeConnection(send);
         controller.close();
       });
     }
@@ -31,8 +28,9 @@ export async function GET(req: NextRequest) {
   return new NextResponse(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
     },
   });
 }
+export const runtime = 'edge'

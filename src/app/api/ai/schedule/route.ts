@@ -1,13 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getAISchedule } from '@/lib/ai-services';
+import { Event, UserPreferences } from '@/lib/types';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const { events, userPreferences } = await request.json();
-    const aiSchedule = await getAISchedule(events, userPreferences);
-    return NextResponse.json(aiSchedule);
+    const { date, comments, events, userPreferences } = await request.json();
+
+    const result = await getAISchedule(events, userPreferences, comments);
+
+    if ('error' in result) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+
+    return NextResponse.json(result);
   } catch (error) {
-    console.error('Error generating AI schedule:', error);
+    console.error('Error in AI scheduling:', error);
     return NextResponse.json({ error: 'Failed to generate AI schedule' }, { status: 500 });
   }
 }

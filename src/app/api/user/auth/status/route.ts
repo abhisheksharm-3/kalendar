@@ -10,3 +10,4 @@ export async function GET() {
     return NextResponse.json({ isLoggedIn: false });
   }
 }
+export const runtime = 'edge'

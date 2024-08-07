@@ -1,11 +1,11 @@
-import { CallToAction } from "@/components/CTA";
-import { FAQs } from "@/components/FAQ";
-import Hero from "@/components/Hero";
-import { Integration } from "@/components/Integration";
-import Layout from "@/components/Layout";
-import { LogoTicker } from "@/components/LogoTicker";
-import { ProductShowcase } from "@/components/ProductShowcase";
-import { Pricing } from "@/components/PricingComp";
+import { CallToAction } from "@/components/marketing/CTA";
+import { FAQs } from "@/components/marketing/FAQ";
+import Hero from "@/components/marketing/Hero";
+import { Integration } from "@/components/marketing/Integration";
+import Layout from "@/components/layout/Layout";
+import { LogoTicker } from "@/components/marketing/LogoTicker";
+import { ProductShowcase } from "@/components/marketing/ProductShowcase";
+import { Pricing } from "@/components/marketing/PricingComp";
 
 export default function Home() {
   return (
