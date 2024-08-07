@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getLoggedInUser, getAccessToken } from "@/lib/server/appwrite";
-import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from "@/lib/server/calendarUtilsforServer";
+import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from "@/app/api/(serverUtils)/calendarUtilsforServer";
 
 export async function POST(request: Request) {
   try {

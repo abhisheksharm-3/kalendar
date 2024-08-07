@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createGoogleCalendarClient, getOrCreateCalendar } from '@/lib/server/calendarUtilsforServer';
+import { createGoogleCalendarClient, getOrCreateCalendar } from '@/app/api/(serverUtils)/calendarUtilsforServer';
 
 export async function POST(request: Request) {
   try {

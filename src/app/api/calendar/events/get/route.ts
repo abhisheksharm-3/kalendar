@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
-import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from '@/lib/server/calendarUtilsforServer';
+import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from '@/app/api/(serverUtils)/calendarUtilsforServer';
 import { Event } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
