@@ -33,3 +33,4 @@ async function setupWebhook(calendar: any, calendarId: string) {
 
   return response.data;
 }
+export const runtime = 'edge'

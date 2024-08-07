@@ -45,3 +45,4 @@ async function fetchAllEvents(calendar: any, calendarId: string) {
 
   return allEvents;
 }
+export const runtime = 'edge'

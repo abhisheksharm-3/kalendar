@@ -68,3 +68,4 @@ function triggerCalendarUpdate() {
     (global as any).sendCalendarUpdate();
   }
 }
+export const runtime = 'edge'
