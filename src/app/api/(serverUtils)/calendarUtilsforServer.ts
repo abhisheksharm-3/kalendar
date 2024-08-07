@@ -1,4 +1,3 @@
-"use server"
 import { google } from 'googleapis';
 
 const CALENDAR_NAME = "Kalendar";
