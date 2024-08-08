@@ -63,3 +63,7 @@ export interface Event {
     }[];
     commonDelays: string[];
   }
+
+export  interface Schedule {
+    schedule: Event[];
+  }

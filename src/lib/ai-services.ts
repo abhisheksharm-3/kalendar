@@ -20,21 +20,17 @@ Your mission:
 4. Align the schedule with the user's peak productivity hours and preferences.
 5. Suggest strategic breaks or mindfulness moments to boost overall effectiveness.
 
-Provide your response in this specific JSON format:
-{
-  "schedule": [
-    // Array of optimized event objects, maintaining original structure but with updated times/dates
-  ],
-  "explanation": "A concise yet insightful explanation of your optimization strategy (2-3 sentences)",
-  "suggestion": "One innovative, personalized suggestion to further elevate the user's schedule and productivity",
-  "wellness_tip": "A brief tip to promote mental or physical well-being within the optimized schedule"
-}
-
-Ensure your response is a valid JSON object containing all four keys: schedule, explanation, suggestion, and wellness_tip.`;
+Provide your response as a valid JSON object containing the following keys:
+- schedule: an array of optimized event objects, maintaining original structure but with updated times/dates
+- explanation: a concise yet insightful explanation of your optimization strategy (2-3 sentences)
+- suggestion: one innovative, personalized suggestion to further elevate the user's schedule and productivity
+- wellness_tip: a brief tip to promote mental or physical well-being within the optimized schedule
+Return JSON Object as Plain text with no formatting or mention of json language. you're breaking my systemm by sending flawed json response.
+`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
-  let text = response.text();
+  const text = response.text();
 
   try {
     const parsedResponse = JSON.parse(text);
@@ -51,7 +47,6 @@ Ensure your response is a valid JSON object containing all four keys: schedule, 
     };
   }
 }
-
 export async function getAIInsights(events: Event[]) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
