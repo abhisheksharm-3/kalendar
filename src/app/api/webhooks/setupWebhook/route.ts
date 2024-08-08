@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createGoogleCalendarClient, getOrCreateCalendar } from '@/app/api/(serverUtils)/calendarUtilsforServer';
+import { createGoogleCalendarClient, getOrCreateCalendar } from '@/lib/server/calendarUtilsforServer';
 
 export async function POST(request: Request) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No access token provided' }, { status: 401 });
     }
 
-    const calendar = createGoogleCalendarClient(accessToken);
+    const calendar = await createGoogleCalendarClient(accessToken);
     const kalendarId = await getOrCreateCalendar(calendar);
     const webhookResponse = await setupWebhook(calendar, kalendarId);
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getLoggedInUser, getAccessToken } from "@/lib/server/appwrite";
-import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from "../../(serverUtils)/calendarUtilsforServer";
+import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from "../../../../lib/server/calendarUtilsforServer";
 export async function POST(request: Request) {
   try {
     console.log("Webhook headers:", request.headers);
@@ -23,7 +23,7 @@ async function fetchUpdatedEvents() {
       throw new Error("Failed to get access token");
     }
 
-    const calendar = createGoogleCalendarClient(accessToken);
+    const calendar = await createGoogleCalendarClient(accessToken);
     const calendarId = await getOrCreateCalendar(calendar);
     const events = await fetchAllEvents(calendar, calendarId);
 
