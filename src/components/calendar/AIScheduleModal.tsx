@@ -110,7 +110,6 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
   const ModalContent = () => (
     <>
       <div className="mb-4">
-        <h2 className="text-lg font-semibold">AI-Assisted Scheduling</h2>
         <p className="text-sm text-gray-500">Select a date and provide any additional comments for your AI-optimized schedule.</p>
       </div>
       {content}
