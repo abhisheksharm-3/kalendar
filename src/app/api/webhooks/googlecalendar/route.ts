@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { getLoggedInUser, getAccessToken } from "@/lib/server/appwrite";
 import { handleApiError } from "../../(serverUtils)/calendarUtilsforServer";
-import { google } from "googleapis";
-let calendarCreationLock = false;
 export async function POST(request: Request) {
   try {
     console.log("Webhook headers:", request.headers);
@@ -13,45 +11,6 @@ export async function POST(request: Request) {
     return NextResponse.json(handleApiError(error), { status: 500 });
   }
 }
-export async function createGoogleCalendarClient(accessToken: string) {
-  const auth = new google.auth.OAuth2();
-  auth.setCredentials({ access_token: accessToken });
-  return google.calendar({ version: 'v3', auth });
-}
-
-export async function getOrCreateCalendar(calendar: any): Promise<string> {
-  // Wait until the lock is released if it is currently locked
-  while (calendarCreationLock) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-
-  // Lock the critical section
-  calendarCreationLock = true;
-
-  try {
-    const calendarList = await calendar.calendarList.list();
-    const existingCalendar = calendarList.data.items?.find((cal: { summary: string; }) => cal.summary === "Kalendar");
-
-    if (existingCalendar) {
-      return existingCalendar.id!;
-    }
-    console.log("creating new calendar", existingCalendar);
-
-    const newCalendar = await calendar.calendars.insert({
-      requestBody: {
-        summary: "Kalendar",
-        timeZone: "Asia/Kolkata",
-        description: "A calendar for all your events by Kalendar",
-      }
-    });
-
-    return newCalendar.data.id!;
-  } finally {
-    // Release the lock
-    calendarCreationLock = false;
-  }
-}
-
 async function fetchUpdatedEvents() {
   try {
     const user = await getLoggedInUser();
@@ -107,4 +66,3 @@ function triggerCalendarUpdate() {
     (global as any).sendCalendarUpdate();
   }
 }
-export const runtime = 'edge'

@@ -10,5 +10,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Error signing out' }, { status: 500 });
   }
 }
-
-export const runtime = "edge"
