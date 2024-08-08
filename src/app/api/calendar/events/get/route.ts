@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
-import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from '@/app/api/(serverUtils)/calendarUtilsforServer';
+import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from '@/lib/server/calendarUtilsforServer';
 import { Event } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const calendar = createGoogleCalendarClient(session.accessToken);
+    const calendar = await createGoogleCalendarClient(session.accessToken);
     const calendarId = await getOrCreateCalendar(calendar);
 
     const events = await fetchAllEvents(calendar, calendarId);

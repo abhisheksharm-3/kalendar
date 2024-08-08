@@ -62,7 +62,7 @@ export default function NavbarComponent() {
         <NavbarItem>
           <Button 
             as={Link} 
-            href="/user/auth" 
+            href="/sign-in" 
             className="bg-purple-600 text-white hover:bg-purple-700 transition-colors"
           >
             Get Started
@@ -88,7 +88,7 @@ export default function NavbarComponent() {
           <Link
             color="danger"
             className="w-full"
-            href="/user/auth"
+            href="/sign-in"
             size="lg"
           >
             <RiLoginBoxLine className="mr-2 inline" />

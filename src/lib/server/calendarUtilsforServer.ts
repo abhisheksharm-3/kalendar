@@ -1,3 +1,4 @@
+"use server"
 import { google } from 'googleapis';
 
 const CALENDAR_NAME = "Kalendar";
@@ -20,13 +21,14 @@ export async function getOrCreateCalendar(calendar: any): Promise<string> {
 
   try {
     const calendarList = await calendar.calendarList.list();
+    console.log('calendarList.data:', calendarList.data);
     const existingCalendar = calendarList.data.items?.find((cal: { summary: string; }) => cal.summary === CALENDAR_NAME);
-
+  
     if (existingCalendar) {
       return existingCalendar.id!;
     }
     console.log("creating new calendar", existingCalendar);
-
+  
     const newCalendar = await calendar.calendars.insert({
       requestBody: {
         summary: CALENDAR_NAME,
@@ -34,8 +36,11 @@ export async function getOrCreateCalendar(calendar: any): Promise<string> {
         description: "A calendar for all your events by Kalendar",
       }
     });
-
+    console.log('newCalendar.data:', newCalendar.data);
     return newCalendar.data.id!;
+  } catch (error) {
+    console.error('Error in getOrCreateCalendar:', error);
+    throw error;
   } finally {
     // Release the lock
     calendarCreationLock = false;
@@ -44,6 +49,11 @@ export async function getOrCreateCalendar(calendar: any): Promise<string> {
 
 export async function handleApiError(error: unknown) {
   console.error('API Error:', error);
-  const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-  return { error: message };
+  if (error instanceof Error) {
+    return { error: error.message };
+  } else if (typeof error === 'object' && error !== null) {
+    return { error: JSON.stringify(error) };
+  } else {
+    return { error: 'An unexpected error occurred' };
+  }
 }

@@ -8,6 +8,8 @@ import { MobileSidebar } from '@/components/calendar/MobileSidebar';
 import EventCreationModal from '@/components/calendar/CreateEvent';
 import AIScheduleModal from '@/components/calendar/AIScheduleModal';
 import { useEvents } from '@/hooks/useEvents';
+import LoadingState from '@/components/calendar/LoadingState';
+import FailureComponent from '@/components/calendar/FailiureComponent';
 
 const KalendarApp: React.FC = () => {
   const { date, view, goToToday, goToPrevious, goToNext, setDate, setView } = useCalendar();
@@ -42,11 +44,11 @@ const KalendarApp: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div>Loading events...</div>;
+    return <LoadingState />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <FailureComponent onRetry={refetchEvents} />;
   }
 
   return (
