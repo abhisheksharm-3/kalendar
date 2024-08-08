@@ -70,6 +70,7 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
           toast.success(`Event "${event.summary}" has been updated.`, {
             action: {
               label: 'View',
+              onClick: () => console.log("Success"),
             }
           });
         } catch (error) {
@@ -78,12 +79,14 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
             toast.error(`Error updating event "${event.summary}": ${axiosError.message}`, {
               action: {
                 label: 'Dismiss',
+                onClick: () => console.log("Dismiss"),
               }
             });
           } else {
             toast.error(`Unexpected error updating event "${event.summary}": ${error}`, {
               action: {
                 label: 'Dismiss',
+                onClick: () => console.log("error"),
               }
             });
           }
