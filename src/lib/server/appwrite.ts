@@ -43,7 +43,7 @@ export async function getLoggedInUser() {
     return null;
   }
 }
-export async function storeAccessToken(userId: string, accessToken: string) {
+export async function storeTokens(userId: string, accessToken: string, refreshToken: string) {
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_ENDPOINT!)
     .setProject(process.env.APPWRITE_PROJECT_ID!)
@@ -67,6 +67,7 @@ export async function storeAccessToken(userId: string, accessToken: string) {
         existingTokens.documents[0].$id,
         {
           accessToken: accessToken,
+          refreshToken: refreshToken,
           updatedAt: new Date().toISOString()
         }
       );
@@ -79,6 +80,7 @@ export async function storeAccessToken(userId: string, accessToken: string) {
         {
           userId: userId,
           accessToken: accessToken,
+          refreshToken: refreshToken,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
@@ -92,7 +94,7 @@ export async function storeAccessToken(userId: string, accessToken: string) {
   }
 }
 
-export async function getAccessToken(userId: string) {
+export async function getTokens(userId: string) {
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_ENDPOINT!)
     .setProject(process.env.APPWRITE_PROJECT_ID!)
@@ -108,7 +110,10 @@ export async function getAccessToken(userId: string) {
     );
 
     if (tokens.documents.length > 0) {
-      return tokens.documents[0].accessToken;
+      return {
+        accessToken: tokens.documents[0].accessToken,
+        refreshToken: tokens.documents[0].refreshToken
+      };
     } else {
       return null;
     }

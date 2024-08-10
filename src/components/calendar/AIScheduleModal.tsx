@@ -66,6 +66,7 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
   
       for (const event of schedule.schedule) {
         try {
+          // First, try to update the event
           await axios.put<void>('/api/calendar/events/update', event);
           toast.success(`Event "${event.summary}" has been updated.`, {
             action: {
@@ -74,24 +75,42 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
             }
           });
         } catch (error) {
-          if (axios.isAxiosError(error)) {
-            const axiosError = error as AxiosError;
-            toast.error(`Error updating event "${event.summary}": ${axiosError.message}`, {
-              action: {
-                label: 'Dismiss',
-                onClick: () => console.log("Dismiss"),
-              }
-            });
+          if (axios.isAxiosError(error) && error.response?.status === 500) {
+            try {
+              await axios.post<void>('/api/calendar/events/create', event);
+              toast.success(`Event "${event.summary}" has been created.`, {
+                action: {
+                  label: 'View',
+                  onClick: () => console.log("Success"),
+                }
+              });
+            } catch (createError) {
+              handleEventError(createError, event, 'creating');
+            }
           } else {
-            toast.error(`Unexpected error updating event "${event.summary}": ${error}`, {
-              action: {
-                label: 'Dismiss',
-                onClick: () => console.log("error"),
-              }
-            });
+            handleEventError(error, event, 'updating');
           }
         }
       }
+    }
+  };
+
+  const handleEventError = (error: unknown, event: any, action: string) => {
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError;
+      toast.error(`Error ${action} event "${event.summary}": ${axiosError.message}`, {
+        action: {
+          label: 'Dismiss',
+          onClick: () => console.log("Dismiss"),
+        }
+      });
+    } else {
+      toast.error(`Unexpected error ${action} event "${event.summary}": ${error}`, {
+        action: {
+          label: 'Dismiss',
+          onClick: () => console.log("error"),
+        }
+      });
     }
   };
 
@@ -147,18 +166,16 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
   );
 
   const ModalContent = () => (
-    <>
-      <div className="mb-4">
-        <p className="text-sm text-gray-500">Select a date and provide any additional comments for your AI-optimized schedule.</p>
-      </div>
+    <div className="space-y-4">
+      <p className="text-sm text-gray-500">Select a date and provide any additional comments for your AI-optimized schedule.</p>
       {content}
-    </>
+    </div>
   );
 
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto scrollbar-hide">
           <DialogHeader>
             <DialogTitle>AI-Assisted Scheduling</DialogTitle>
           </DialogHeader>
@@ -174,7 +191,7 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
         <DrawerHeader className="text-left">
           <DrawerTitle>AI-Assisted Scheduling</DrawerTitle>
         </DrawerHeader>
-        <div className="px-4 py-2">
+        <div className="px-4 py-2 overflow-y-auto scrollbar-hide max-h-[calc(100vh-10rem)]">
           <ModalContent />
         </div>
         <DrawerFooter className="pt-2">
