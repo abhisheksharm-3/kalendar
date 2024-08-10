@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from '@/lib/server/calendarUtilsforServer';
 import { Event } from "@/lib/types";
+import { cookies } from "next/headers";
+import { refreshAccessToken } from "@/lib/server/refreshTokens";
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,10 +14,34 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const calendar = await createGoogleCalendarClient(session.accessToken);
-    const calendarId = await getOrCreateCalendar(calendar);
+    let accessToken = session.accessToken;
+    let refreshToken = session.refreshToken;
+    let calendar = await createGoogleCalendarClient(accessToken);
+    let calendarId: string;
+    let events: Event[];
 
-    const events = await fetchAllEvents(calendar, calendarId);
+    try {
+      calendarId = await getOrCreateCalendar(calendar);
+      events = await fetchAllEvents(calendar, calendarId);
+    } catch (error: any) {
+      if (error.response && (error.response.status === 400 || error.response.status === 401)) {
+        // Token is invalid, try to refresh
+        const refreshedToken = await refreshAccessToken({ accessToken, refreshToken, expiresAt: session.expiresAt });
+        
+        if (!refreshedToken) {
+          // Refresh token is also invalid, delete the session cookie
+          cookies().delete('next-auth.session-token');
+          return NextResponse.json({ error: "Session expired. Please log in again." }, { status: 401 });
+        }
+
+        accessToken = refreshedToken.accessToken as string;
+        calendar = await createGoogleCalendarClient(accessToken);
+        calendarId = await getOrCreateCalendar(calendar);
+        events = await fetchAllEvents(calendar, calendarId);
+      } else {
+        throw error; // Re-throw if it's not a token issue
+      }
+    }
     console.log(events)
 
     return NextResponse.json(events);

@@ -8,22 +8,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { format, parse } from 'date-fns';
 import { Event } from '@/lib/types';
-import { Clock, Calendar, MapPin, User, Info } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Clock, Calendar, MapPin, User, Info, Edit, Save, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { useEvents } from '@/hooks/useEvents';
 
 interface EventDetailsModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   event: Event | null;
-  onEventUpdate: (updatedEvent: Event) => void;
 }
 
-const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenChange, event, onEventUpdate }) => {
+const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenChange, event }) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isEditing, setIsEditing] = useState(false);
   const [editedEvent, setEditedEvent] = useState<Event | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateEvent } = useEvents();
 
   if (!event) return null;
 
@@ -39,51 +41,34 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
 
   const handleSave = async () => {
     if (!editedEvent) return;
+    setIsLoading(true);
   
     try {
-      const formatDate = (dateString: string, timeZone: string) => {
+      const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+        return date.toISOString();
       };
   
       const eventData = {
-        id: editedEvent.id,
-        summary: editedEvent.summary,
-        description: editedEvent.description,
+        ...editedEvent,
         start: {
-          dateTime: formatDate(editedEvent.start.dateTime, editedEvent.start.timeZone),
-          timeZone: 'Asia/Kolkata' // Explicitly set to IST
+          dateTime: formatDate(editedEvent.start.dateTime),
+          timeZone: 'Asia/Kolkata'
         },
         end: {
-          dateTime: formatDate(editedEvent.end.dateTime, editedEvent.end.timeZone),
-          timeZone: 'Asia/Kolkata' // Explicitly set to IST
+          dateTime: formatDate(editedEvent.end.dateTime),
+          timeZone: 'Asia/Kolkata'
         }
       };
   
-      console.log('Sending event data:', eventData); // For debugging
-  
-      const response = await axios.put('/api/calendar/events/update', eventData);
-      
-      if (response.data && response.data.id) {
-        onEventUpdate(response.data);
-        setIsEditing(false);
-        toast.success('Event updated successfully');
-      } else {
-        throw new Error('Invalid response from server');
-      }
+      await updateEvent(eventData);
+      setIsEditing(false);
+      toast.success('Event updated successfully');
     } catch (error) {
       console.error('Error updating event:', error);
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('Response data:', error.response.data);
-        toast.error(`Failed to update event: ${error.response.data.message || 'Unknown error'}`);
-      } else {
-        toast.error('Failed to update event: Network error');
-      }
+      toast.error('Failed to update event: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,67 +94,111 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      {isEditing ? (
-        <div className="space-y-4">
-          <Input
-            name="summary"
-            value={editedEvent?.summary}
-            onChange={handleInputChange}
-            placeholder="Event Title"
-          />
-          <div className="flex lg:space-x-2 space-y-2 lg:space-y-0 flex-col lg:flex-row">
+      <AnimatePresence mode="wait">
+        {isEditing ? (
+          <motion.div
+            key="editing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-4"
+          >
             <Input
-              name="start"
-              type="datetime-local"
-              value={formatDateTime(editedEvent?.start.dateTime || '')}
+              name="summary"
+              value={editedEvent?.summary}
               onChange={handleInputChange}
+              placeholder="Event Title"
+              className="text-lg font-semibold"
             />
-            <Input
-              name="end"
-              type="datetime-local"
-              value={formatDateTime(editedEvent?.end.dateTime || '')}
-              onChange={handleInputChange}
-            />
-          </div>
-          <Textarea
-            name="description"
-            value={editedEvent?.description}
-            onChange={handleInputChange}
-            placeholder="Event Description"
-          />
-          <div className="flex justify-end space-x-2">
-            <Button onClick={() => setIsEditing(false)} variant="outline">Cancel</Button>
-            <Button onClick={handleSave}>Save</Button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <h2 className="text-3xl font-bold text-primary">{event.summary}</h2>
-          <div className="space-y-4">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
-            >
-              <Clock className="w-6 h-6 text-primary" />
-              <p>{format(new Date(event.start.dateTime), "MMMM d, yyyy 'at' h:mm a")} - {format(new Date(event.end.dateTime), "h:mm a")}</p>
-            </motion.div>
-            {event.description && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start</label>
+                <Input
+                  id="start-date"
+                  name="start"
+                  type="datetime-local"
+                  value={formatDateTime(editedEvent?.start.dateTime || '')}
+                  onChange={handleInputChange}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End</label>
+                <Input
+                  id="end-date"
+                  name="end"
+                  type="datetime-local"
+                  value={formatDateTime(editedEvent?.end.dateTime || '')}
+                  onChange={handleInputChange}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <Textarea
+                id="description"
+                name="description"
+                value={editedEvent?.description}
+                onChange={handleInputChange}
+                placeholder="Event Description"
+                className="w-full h-32"
+              />
+            </div>
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button onClick={() => setIsEditing(false)} variant="outline" className="flex items-center" disabled={isLoading}>
+                <X className="w-4 h-4 mr-2" /> Cancel
+              </Button>
+              <Button onClick={handleSave} className="flex items-center" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <span className="spinner mr-2"></span> Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" /> Save
+                  </>
+                )}
+              </Button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="viewing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+            <h2 className="text-3xl font-bold text-primary">{event.summary}</h2>
+            <div className="space-y-4">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.1 }}
                 className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
               >
-                <Info className="w-6 h-6 text-primary mt-1" />
-                <p className="text-sm">{event.description}</p>
+                <Clock className="w-6 h-6 text-primary" />
+                <p>{format(new Date(event.start.dateTime), "MMMM d, yyyy 'at' h:mm a")} - {format(new Date(event.end.dateTime), "h:mm a")}</p>
               </motion.div>
-            )}
-          </div>
-          <Button onClick={handleEdit} className="mt-4">Edit Event</Button>
-        </>
-      )}
+              {event.description && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-start space-x-3 text-gray-700 dark:text-gray-300"
+                >
+                  <Info className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
+                  <p className="text-sm">{event.description}</p>
+                </motion.div>
+              )}
+            </div>
+            <Button onClick={handleEdit} className="mt-6 w-full sm:w-auto flex items-center justify-center">
+              <Edit className="w-4 h-4 mr-2" /> Edit Event
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 

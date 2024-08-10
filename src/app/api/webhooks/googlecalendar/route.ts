@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getLoggedInUser, getAccessToken } from "@/lib/server/appwrite";
+import { getLoggedInUser, getTokens } from "@/lib/server/appwrite";
 import { createGoogleCalendarClient, getOrCreateCalendar, handleApiError } from "../../../../lib/server/calendarUtilsforServer";
 export async function POST(request: Request) {
   try {
@@ -18,7 +18,8 @@ async function fetchUpdatedEvents() {
       throw new Error("No authenticated user found");
     }
 
-    const accessToken = await getAccessToken(user.$id);
+    const tokens = await getTokens(user.$id);
+    const accessToken = tokens?.accessToken;
     if (!accessToken) {
       throw new Error("Failed to get access token");
     }
