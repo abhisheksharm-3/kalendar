@@ -16,6 +16,19 @@ const nextConfig = {
     }
     return config;
   },
+  serverRuntimeConfig: {
+    // This will be available on both server and client sides
+    functionMaxDuration: 60 // in seconds
+  },
 };
+
+// Vercel-specific configuration
+if (process.env.VERCEL) {
+  nextConfig.functions = {
+    'api/ai/schedule': {
+      maxDuration: 60
+    }
+  };
+}
 
 export default nextConfig;
