@@ -10,7 +10,6 @@ import { format, parse } from 'date-fns';
 import { Event } from '@/lib/types';
 import { Clock, Calendar, MapPin, User, Info, Edit, Save, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
 import { toast } from 'sonner';
 import { useEvents } from '@/hooks/useEvents';
 
@@ -25,7 +24,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
   const [isEditing, setIsEditing] = useState(false);
   const [editedEvent, setEditedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { updateEvent } = useEvents();
+  const { updateEvent, refetchEvents } = useEvents();
 
   if (!event) return null;
 
@@ -64,6 +63,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
       await updateEvent(eventData);
       setIsEditing(false);
       toast.success('Event updated successfully');
+      await refetchEvents();
     } catch (error) {
       console.error('Error updating event:', error);
       toast.error('Failed to update event: ' + (error instanceof Error ? error.message : 'Unknown error'));

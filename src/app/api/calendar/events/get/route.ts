@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
         }
 
         accessToken = refreshedToken.accessToken as string;
+        session.accessToken = accessToken;
         calendar = await createGoogleCalendarClient(accessToken);
         calendarId = await getOrCreateCalendar(calendar);
         events = await fetchAllEvents(calendar, calendarId);
