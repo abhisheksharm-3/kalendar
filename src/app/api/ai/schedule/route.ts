@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAISchedule } from '@/lib/ai-services';
 import { Event, UserPreferences } from '@/lib/types';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
