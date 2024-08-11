@@ -4,12 +4,15 @@ import { Event, UserPreferences } from "./types";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
+function generateUniqueId() {
+  return 'event_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
 export async function getAISchedule(events: Event[], userPreferences: UserPreferences, comments: string) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const sampleEvent = {
     kind: "calendar#event",
-    id: "sample_event_id",
+    id: generateUniqueId(),
     status: "confirmed",
     summary: "Sample Event",
     description: "This is a sample event for demonstration purposes.",
@@ -25,7 +28,7 @@ export async function getAISchedule(events: Event[], userPreferences: UserPrefer
 
   const eventsToUse = events.length > 0 ? events : [sampleEvent];
 
-  const prompt = `As Chronos, the ultimate AI scheduling assistant, your task is to craft an optimal schedule that not only maximizes productivity but also enhances well-being and personal growth. Analyze the following data with your unparalleled expertise:
+  const prompt = `As Chronos, the ultimate AI scheduling assistant, your task is to craft an optimal schedule for the next day that not only maximizes productivity but also enhances well-being and personal growth. Analyze the following data with your unparalleled expertise:
 
 Events: ${JSON.stringify(eventsToUse)}
 User Preferences: ${JSON.stringify(userPreferences)}
@@ -34,20 +37,21 @@ Additional Comments: ${comments}
 Note: If no events were provided, a sample event has been included for demonstration purposes.
 
 Your mission:
-1. Optimize the schedule considering work-life balance, energy levels, and task synergies.
-2. Identify and resolve potential conflicts or overlaps.
+1. Create a new schedule for the next day, considering work-life balance, energy levels, and task synergies.
+2. Ensure all new events have unique IDs and are set for the next day.
 3. Incorporate buffer times for unexpected situations and transitions.
 4. Align the schedule with the user's peak productivity hours and preferences.
 5. Suggest strategic breaks or mindfulness moments to boost overall effectiveness.
 
 Provide your response as a valid JSON object containing the following keys:
-- schedule: an array of optimized event objects, maintaining original structure but with updated times/dates
-- explanation: a concise yet insightful explanation of your optimization strategy (2-3 sentences)
+- schedule: an array of new event objects for the next day, each with a unique ID and appropriate start/end times
+- explanation: a concise yet insightful explanation of your scheduling strategy (2-3 sentences)
 - suggestion: one innovative, personalized suggestion to further elevate the user's schedule and productivity
-- wellness_tip: a brief tip to promote mental or physical well-being within the optimized schedule
-Use Past Events for refrence, don't add them to users next day  unless he explicitly tells you to do so.
+- wellness_tip: a brief tip to promote mental or physical well-being within the new schedule
+
+Use Past Events for reference, but create entirely new events for the next day unless explicitly told to reschedule a specific event.
 Serve the User with utmost excellence and care.
-Return JSON Object as Plain text with no formatting or mention of json language. you're breaking my system by sending flawed json response.
+Return JSON Object as Plain text with no formatting or mention of json language.
 `;
 
   const result = await model.generateContent(prompt);
@@ -61,6 +65,12 @@ Return JSON Object as Plain text with no formatting or mention of json language.
       throw new Error("Response is missing required fields");
     }
     
+    // Ensure all events in the schedule have unique IDs
+    parsedResponse.schedule = parsedResponse.schedule.map((event: Event) => ({
+      ...event,
+      id: generateUniqueId()
+    }));
+    
     return parsedResponse;
   } catch (error) {
     console.error("Error parsing AI response:", error);
@@ -69,6 +79,7 @@ Return JSON Object as Plain text with no formatting or mention of json language.
     };
   }
 }
+
 export async function getAIInsights(events: Event[]) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -107,7 +118,7 @@ As Kai, weave a tapestry of words that:
 
 Classify the day's potential impact using evocative, inspiring language (e.g., "a crucible of transformation", "a mosaic of opportunities", "a symphony of purposeful action").
 
-Craft your response in 4-5 sentences, each one a key that unlocks a deeper understanding of the day's significance. If no events are provided, channel Kai's wisdom to offer a reflective, growth-oriented message about the power of unstructured time, without explicitly mentioning the lack of events. Also Don't be poetic, act like aprofessional assistant, helpful and courteous.`;
+Craft your response in 4-5 sentences, each one a key that unlocks a deeper understanding of the day's significance. If no events are provided, channel Kai's wisdom to offer a reflective, growth-oriented message about the power of unstructured time, without explicitly mentioning the lack of events. Also Don't be poetic, act like a professional assistant, helpful and courteous.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
