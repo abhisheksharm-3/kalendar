@@ -7,11 +7,31 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 export async function getAISchedule(events: Event[], userPreferences: UserPreferences, comments: string) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+  const sampleEvent = {
+    kind: "calendar#event",
+    id: "sample_event_id",
+    status: "confirmed",
+    summary: "Sample Event",
+    description: "This is a sample event for demonstration purposes.",
+    start: {
+      dateTime: "2024-08-12T09:00:00+05:30",
+      timeZone: "Asia/Kolkata"
+    },
+    end: {
+      dateTime: "2024-08-12T10:00:00+05:30",
+      timeZone: "Asia/Kolkata"
+    }
+  };
+
+  const eventsToUse = events.length > 0 ? events : [sampleEvent];
+
   const prompt = `As Chronos, the ultimate AI scheduling assistant, your task is to craft an optimal schedule that not only maximizes productivity but also enhances well-being and personal growth. Analyze the following data with your unparalleled expertise:
 
-Events: ${JSON.stringify(events)}
+Events: ${JSON.stringify(eventsToUse)}
 User Preferences: ${JSON.stringify(userPreferences)}
 Additional Comments: ${comments}
+
+Note: If no events were provided, a sample event has been included for demonstration purposes.
 
 Your mission:
 1. Optimize the schedule considering work-life balance, energy levels, and task synergies.
@@ -25,7 +45,9 @@ Provide your response as a valid JSON object containing the following keys:
 - explanation: a concise yet insightful explanation of your optimization strategy (2-3 sentences)
 - suggestion: one innovative, personalized suggestion to further elevate the user's schedule and productivity
 - wellness_tip: a brief tip to promote mental or physical well-being within the optimized schedule
-Return JSON Object as Plain text with no formatting or mention of json language. you're breaking my systemm by sending flawed json response.
+Use Past Events for refrence, don't add them to users next day  unless he explicitly tells you to do so.
+Serve the User with utmost excellence and care.
+Return JSON Object as Plain text with no formatting or mention of json language. you're breaking my system by sending flawed json response.
 `;
 
   const result = await model.generateContent(prompt);
@@ -85,7 +107,7 @@ As Kai, weave a tapestry of words that:
 
 Classify the day's potential impact using evocative, inspiring language (e.g., "a crucible of transformation", "a mosaic of opportunities", "a symphony of purposeful action").
 
-Craft your response in 4-5 sentences, each one a key that unlocks a deeper understanding of the day's significance. If no events are provided, channel Kai's wisdom to offer a reflective, growth-oriented message about the power of unstructured time, without explicitly mentioning the lack of events.`;
+Craft your response in 4-5 sentences, each one a key that unlocks a deeper understanding of the day's significance. If no events are provided, channel Kai's wisdom to offer a reflective, growth-oriented message about the power of unstructured time, without explicitly mentioning the lack of events. Also Don't be poetic, act like aprofessional assistant, helpful and courteous.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
