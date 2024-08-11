@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
 };
-
+export const dynamic = 'force-dynamic'
 export const viewport: Viewport = {
   themeColor: "#FFFFFF",
   width: 'device-width',
