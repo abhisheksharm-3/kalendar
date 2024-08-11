@@ -12,6 +12,7 @@ interface PricingTabProps {
   }
   planDescription: string
   features: string[]
+  specialNote?: string
 }
 
 export function PricingTab(props: PricingTabProps) {
@@ -48,6 +49,9 @@ export function PricingTab(props: PricingTabProps) {
             )
           })}
         </ul>
+        {props.specialNote && (
+        <div className="mt-4 text-sm text-emerald-400 italic">{props.specialNote}</div>
+      )}
       </div>
     </div>
   )
@@ -68,10 +72,10 @@ export default function PricingTable() {
           <button className={`relative flex-1 text-sm font-medium h-8 rounded-full focus-visible:outline-none focus-visible:ring focus-visible:ring-slate-600 transition-colors duration-150 ease-in-out ${isAnnual ? 'text-white/70' : 'text-white'}`} onClick={() => setIsAnnual(false)} aria-pressed={!isAnnual}>Monthly</button>
         </div>
       </div>
-
-      <div className="max-w-sm mx-auto grid gap-6 lg:grid-cols-3 items-start lg:max-w-none">
+      {/* max-w-sm mx-auto grid gap-6 lg:grid-cols-3 items-start lg:max-w-none -> base styles */}
+      <div className="max-w-sm mx-auto grid gap-6 lg:grid-cols-1 items-center lg:max-w-none">
         {/* Pricing tab 1 */}
-        <PricingTab
+        {/* <PricingTab
           yearly={isAnnual}
           planName="Essential"
           price={{ yearly: 2199, monthly: 2699 }}
@@ -81,10 +85,10 @@ export default function PricingTable() {
             'Basic conflict resolution',
             'Email notifications',
             'Calendar integration',
-          ]} />
+          ]} /> */}
 
         {/* Pricing tab 2 */}
-        <PricingTab
+        {/* <PricingTab
           yearly={isAnnual}
           popular={true}
           planName="Pro"
@@ -96,10 +100,10 @@ export default function PricingTable() {
             'Smart conflict resolution',
             'Custom scheduling rules',
             'Priority support',
-          ]} />
+          ]} /> */}
 
         {/* Pricing tab 3 */}
-        <PricingTab
+        {/* <PricingTab
           yearly={isAnnual}
           planName="Enterprise"
           price={{ yearly: 5999, monthly: 6499 }}
@@ -111,7 +115,23 @@ export default function PricingTable() {
             'Advanced analytics and reporting',
             'API access for integrations',
             'SLA guarantee',
-          ]} />
+          ]} /> */}
+          <PricingTab
+  yearly={isAnnual}
+  popular={true}
+  planName="Pro (Beta)"
+  price={{ yearly: 0, monthly: 0 }}
+  planDescription="Advanced features for professionals and growing businesses."
+  features={[
+    'All Essential features',
+    'Advanced AI scheduling',
+    'Smart conflict resolution',
+    'Priority support (coming soon)',
+    'Free while we iron out the kinks! (Beta)',
+    "We're in beta, so you're basically our time-travel test subject 🚀",
+  ]}
+  specialNote="Limited time offer: Enjoy Pro features for free during our beta period. Future you will thank present you for jumping on board early! 🎉"
+/>
       </div>
     </div>
   )

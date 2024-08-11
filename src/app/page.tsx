@@ -11,8 +11,8 @@ export default function Home() {
   return (
     <Layout>
       <Hero />
-      <LogoTicker />
-      <Integration />
+      {/* <LogoTicker /> */}
+      {/* <Integration /> */}
       <ProductShowcase />
       <FAQs />
       <Pricing />

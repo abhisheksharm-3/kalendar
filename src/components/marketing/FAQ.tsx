@@ -9,21 +9,21 @@ const items = [
     answer: "Kalendar's AI analyzes your patterns, preferences, and priorities to suggest optimal scheduling times. It learns from your habits to minimize conflicts and maximize productivity.",
   },
   {
-    question: "Can Kalendar integrate with my existing calendar apps?",
-    answer: "Yes, Kalendar seamlessly integrates with popular calendar applications like Google Calendar, Apple Calendar, and Microsoft Outlook. This ensures all your schedules are synchronized across platforms.",
+    "question": "Can Kalendar integrate with my existing calendar apps?",
+    "answer": "Currently, Kalendar seamlessly integrates with Google Calendar, ensuring your schedules are synchronized between Kalendar and your Google Calendar. We're actively working on expanding our integration capabilities, and support for more calendar applications is coming soon."
   },
   {
     question: "Is my data secure with Kalendar's AI?",
-    answer: "Absolutely. We prioritize your data security with state-of-the-art encryption and strict privacy policies. Our AI processes data locally where possible and adheres to GDPR and other relevant data protection regulations.",
+    answer: "Absolutely. We prioritize your data security and privacy. Kalendar uses Google's Gemini API for AI processing, which adheres to strict security standards. We don't store any of your personal data or calendar information on our servers - only a refresh token is securely stored to provide seamless access to your Google Calendar. All data processing is done in real-time, and we are working on bringing out our own AI model to locally process data wherever possible.",
   },
   {
-    question: "How does the AI handle scheduling conflicts?",
-    answer: "Kalendar's AI proactively identifies potential conflicts and suggests alternative times. It considers factors like priority, duration, and your personal preferences to resolve conflicts intelligently.",
+    "question": "How does the AI handle scheduling conflicts?",
+    "answer": "Currently, Kalendar's AI analyzes your past scheduling history to intelligently resolve conflicts. It suggests alternative times based on your typical patterns. Support for more advanced conflict resolution, considering factors like priority and duration, is coming soon."
   },
   {
-    question: "Can I customize the AI's scheduling preferences?",
-    answer: "Yes, you can set custom rules and preferences for the AI to follow. This includes preferred meeting times, break durations, focus periods, and more. The AI adapts to your specific needs over time.",
-  },
+    "question": "Can I customize the AI's scheduling preferences?",
+    "answer": "At present, Kalendar learns from your scheduling habits to adapt to your needs over time. We're actively working on introducing customizable preferences, such as preferred meeting times, break durations, and focus periods. These enhanced customization options will be available soon."
+  }
 ];
 
 const AccordionItem = ({ question, answer, isOpen, toggleOpen, index }: { 

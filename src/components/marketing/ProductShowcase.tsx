@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from "react";
 import { RiAiGenerate, RiCalendarCheckLine, RiTimeLine } from "@remixicon/react";
-import appScreen from "@/assets/images/product.avif";
+import appScreen from "../../../public/image.png";
 
 export const ProductShowcase: React.FC = () => {
   const appImage = useRef<HTMLDivElement>(null);
@@ -46,7 +46,7 @@ export const ProductShowcase: React.FC = () => {
             }}
             ref={appImage}
           >
-            <Image src={appScreen} width={800} height={450} alt="Kalendar AI Interface" className="rounded-lg shadow-2xl" />
+            <Image src={appScreen} quality={100} width={1000} height={450} alt="Kalendar AI Interface" className="rounded-lg shadow-2xl" />
           </motion.div>
         </div>
 
