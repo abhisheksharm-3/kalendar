@@ -8,7 +8,7 @@ function generateUniqueId() {
   return 'event_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 export async function getAISchedule(events: Event[], userPreferences: UserPreferences, comments: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const sampleEvent = {
     kind: "calendar#event",
@@ -81,7 +81,7 @@ Return JSON Object as Plain text with no formatting or mention of json language.
 }
 
 export async function getAIInsights(events: Event[]) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `As Athena, the AI embodiment of wisdom and strategy, analyze these events to uncover profound insights that will revolutionize the user's productivity and life quality:
 
@@ -104,7 +104,7 @@ Format your wisdom as a bulleted list. Each point should be a powerful, concise 
 }
 
 export async function getAISummary(events: Event[]) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `Embody Kai, an AI entity of unparalleled emotional intelligence and insight. Your mission is to craft a summary that resonates deeply with the user's soul, providing not just information, but inspiration and clarity:
 
