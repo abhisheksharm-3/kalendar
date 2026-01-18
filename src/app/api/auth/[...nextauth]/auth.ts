@@ -1,7 +1,52 @@
-// src/app/api/auth/[...nextauth]/auth.ts
+import type { NextAuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 
-import type { NextAuthOptions } from "next-auth"
-import GoogleProvider from "next-auth/providers/google";
+const GOOGLE_SCOPES = [
+  'openid',
+  'https://www.googleapis.com/auth/calendar.calendarlist.readonly',
+  'https://www.googleapis.com/auth/calendar.app.created',
+].join(' ');
+
+/**
+ * Refreshes an expired access token using the refresh token.
+ */
+async function refreshAccessToken(token: {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+}): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+} | null> {
+  try {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+        grant_type: 'refresh_token',
+        refresh_token: token.refreshToken,
+      }),
+    });
+
+    const refreshedTokens = await response.json();
+
+    if (!response.ok) {
+      throw new Error('Failed to refresh token');
+    }
+
+    return {
+      accessToken: refreshedTokens.access_token,
+      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+      expiresAt: Math.floor(Date.now() / 1000) + refreshedTokens.expires_in,
+    };
+  } catch (error) {
+    console.error('Error refreshing access token:', error);
+    return null;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -10,10 +55,10 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: "openid https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.app.created",
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
+          scope: GOOGLE_SCOPES,
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
         },
       },
     }),
@@ -21,11 +66,35 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account }) {
       if (account) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.expiresAt = account.expires_at;
+        return {
+          ...token,
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token,
+          expiresAt: account.expires_at,
+        };
       }
-      return token;
+
+      const expiresAt = token.expiresAt as number;
+      if (Date.now() < expiresAt * 1000) {
+        return token;
+      }
+
+      const refreshedToken = await refreshAccessToken({
+        accessToken: token.accessToken as string,
+        refreshToken: token.refreshToken as string,
+        expiresAt,
+      });
+
+      if (!refreshedToken) {
+        return { ...token, error: 'RefreshAccessTokenError' };
+      }
+
+      return {
+        ...token,
+        accessToken: refreshedToken.accessToken,
+        refreshToken: refreshedToken.refreshToken,
+        expiresAt: refreshedToken.expiresAt,
+      };
     },
     async session({ session, token }) {
       return {
@@ -33,7 +102,11 @@ export const authOptions: NextAuthOptions = {
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
         expiresAt: token.expiresAt as number,
+        error: token.error,
       };
     },
+  },
+  pages: {
+    signIn: '/sign-in',
   },
 };

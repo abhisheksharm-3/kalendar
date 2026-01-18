@@ -1,90 +1,111 @@
-"use client"
-import React, { useState } from 'react';
-import { useMediaQuery } from '@/hooks/use-media-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { format, parse } from 'date-fns';
-import { Event } from '@/lib/types';
-import { Clock, Calendar, MapPin, User, Info, Edit, Save, X } from 'lucide-react';
+'use client';
+
+import React, { useState, useCallback } from 'react';
+import { useMediaQuery } from '@/hooks';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
+} from '@/components/ui/drawer';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { format } from 'date-fns';
+import type { EventType } from '@/lib/types';
+import { Clock, Info, Edit, Save, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { useEvents } from '@/hooks/useEvents';
 
 interface EventDetailsModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  event: Event | null;
+  event: EventType | null;
+  onEventUpdate?: (event: EventType) => Promise<EventType>;
 }
 
-const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenChange, event }) => {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+/**
+ * Formats a datetime string to the format required by datetime-local input.
+ */
+function formatDateTime(dateTimeString: string): string {
+  const date = new Date(dateTimeString);
+  return format(date, "yyyy-MM-dd'T'HH:mm");
+}
+
+export default function EventDetailsModal({
+  isOpen,
+  onOpenChange,
+  event,
+  onEventUpdate,
+}: EventDetailsModalProps) {
+  const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isEditing, setIsEditing] = useState(false);
-  const [editedEvent, setEditedEvent] = useState<Event | null>(null);
+  const [editedEvent, setEditedEvent] = useState<EventType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { updateEvent, refetchEvents } = useEvents();
 
-  if (!event) return null;
-
-  const formatDateTime = (dateTimeString: string) => {
-    const date = new Date(dateTimeString);
-    return format(date, "yyyy-MM-dd'T'HH:mm");
-  };
-
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     setEditedEvent(event);
     setIsEditing(true);
-  };
+  }, [event]);
 
-  const handleSave = async () => {
-    if (!editedEvent) return;
+  const handleSave = useCallback(async () => {
+    if (!editedEvent || !onEventUpdate) return;
     setIsLoading(true);
-  
+
     try {
-      const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toISOString();
-      };
-  
-      const eventData = {
+      const eventData: EventType = {
         ...editedEvent,
         start: {
-          dateTime: formatDate(editedEvent.start.dateTime),
-          timeZone: 'Asia/Kolkata'
+          dateTime: new Date(editedEvent.start.dateTime).toISOString(),
+          timeZone: 'Asia/Kolkata',
         },
         end: {
-          dateTime: formatDate(editedEvent.end.dateTime),
-          timeZone: 'Asia/Kolkata'
-        }
+          dateTime: new Date(editedEvent.end.dateTime).toISOString(),
+          timeZone: 'Asia/Kolkata',
+        },
       };
-  
-      await updateEvent(eventData);
+
+      await onEventUpdate(eventData);
       setIsEditing(false);
       toast.success('Event updated successfully');
-      await refetchEvents();
     } catch (error) {
-      console.error('Error updating event:', error);
-      toast.error('Failed to update event: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      toast.error(
+        `Failed to update event: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [editedEvent, onEventUpdate]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (!editedEvent) return;
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      if (!editedEvent) return;
 
-    const { name, value } = e.target;
-    if (name === 'start' || name === 'end') {
-      setEditedEvent({
-        ...editedEvent,
-        [name]: { ...editedEvent[name], dateTime: value }
-      });
-    } else {
-      setEditedEvent({ ...editedEvent, [name]: value });
-    }
-  };
+      const { name, value } = e.target;
+      if (name === 'start' || name === 'end') {
+        setEditedEvent({
+          ...editedEvent,
+          [name]: { ...editedEvent[name], dateTime: value },
+        });
+      } else {
+        setEditedEvent({ ...editedEvent, [name]: value });
+      }
+    },
+    [editedEvent]
+  );
+
+  const handleCancel = useCallback(() => {
+    setIsEditing(false);
+  }, []);
+
+  if (!event) return null;
 
   const ModalContent = () => (
     <motion.div
@@ -112,7 +133,12 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start</label>
+                <label
+                  htmlFor="start-date"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  Start
+                </label>
                 <Input
                   id="start-date"
                   name="start"
@@ -123,7 +149,12 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
                 />
               </div>
               <div>
-                <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End</label>
+                <label
+                  htmlFor="end-date"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  End
+                </label>
                 <Input
                   id="end-date"
                   name="end"
@@ -135,25 +166,33 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
               </div>
             </div>
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Description
+              </label>
               <Textarea
                 id="description"
                 name="description"
-                value={editedEvent?.description}
+                value={editedEvent?.description || ''}
                 onChange={handleInputChange}
                 placeholder="Event Description"
                 className="w-full h-32"
               />
             </div>
             <div className="flex justify-end space-x-2 pt-4">
-              <Button onClick={() => setIsEditing(false)} variant="outline" className="flex items-center" disabled={isLoading}>
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                className="flex items-center"
+                disabled={isLoading}
+              >
                 <X className="w-4 h-4 mr-2" /> Cancel
               </Button>
               <Button onClick={handleSave} className="flex items-center" disabled={isLoading}>
                 {isLoading ? (
-                  <>
-                    <span className="spinner mr-2"></span> Saving...
-                  </>
+                  'Saving...'
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" /> Save
@@ -179,7 +218,10 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
                 className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
               >
                 <Clock className="w-6 h-6 text-primary" />
-                <p>{format(new Date(event.start.dateTime), "MMMM d, yyyy 'at' h:mm a")} - {format(new Date(event.end.dateTime), "h:mm a")}</p>
+                <p>
+                  {format(new Date(event.start.dateTime), "MMMM d, yyyy 'at' h:mm a")} -{' '}
+                  {format(new Date(event.end.dateTime), 'h:mm a')}
+                </p>
               </motion.div>
               {event.description && (
                 <motion.div
@@ -193,9 +235,14 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
                 </motion.div>
               )}
             </div>
-            <Button onClick={handleEdit} className="mt-6 w-full sm:w-auto flex items-center justify-center">
-              <Edit className="w-4 h-4 mr-2" /> Edit Event
-            </Button>
+            {onEventUpdate && (
+              <Button
+                onClick={handleEdit}
+                className="mt-6 w-full sm:w-auto flex items-center justify-center"
+              >
+                <Edit className="w-4 h-4 mr-2" /> Edit Event
+              </Button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -226,12 +273,12 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onOpenCha
         </div>
         {!isEditing && (
           <DrawerClose asChild>
-            <Button variant="outline" className="mx-auto mb-6">Close</Button>
+            <Button variant="outline" className="mx-auto mb-6">
+              Close
+            </Button>
           </DrawerClose>
         )}
       </DrawerContent>
     </Drawer>
   );
-};
-
-export default EventDetailsModal;
+}

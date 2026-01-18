@@ -1,12 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createSessionClient } from '@/lib/server/appwrite';
+import { NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest) {
-  try {
-    const { account } = await createSessionClient();
-    await account.deleteSession('current');
-    return NextResponse.json({ message: 'Signed out successfully' }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ message: 'Error signing out' }, { status: 500 });
-  }
+/**
+ * GET /api/user/auth/signout
+ * Signs out the user by redirecting to NextAuth signout.
+ */
+export async function GET() {
+  return NextResponse.redirect('/api/auth/signout');
 }

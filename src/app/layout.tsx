@@ -1,15 +1,26 @@
-import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
-import { Toaster } from "@/components/ui/sonner"
+import type { Metadata, Viewport } from 'next';
+import { Inter, DM_Sans } from 'next/font/google';
+import './globals.css';
+import { Providers } from './providers';
+import { Toaster } from '@/components/ui/sonner';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
-const APP_NAME = "Kalendar";
-const APP_DEFAULT_TITLE = "Kalendar - AI-Powered Smart Calendar App";
-const APP_TITLE_TEMPLATE = "%s - Kalendar";
-const APP_DESCRIPTION = "Optimize your schedule with Kalendar, an AI-driven calendar app that provides personalized insights and efficient time management.";
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+});
+
+const APP_NAME = 'Kalendar';
+const APP_DEFAULT_TITLE = 'Kalendar - AI-Powered Smart Calendar App';
+const APP_TITLE_TEMPLATE = '%s - Kalendar';
+const APP_DESCRIPTION =
+  'Optimize your schedule with Kalendar, an AI-driven calendar app that provides personalized insights and efficient time management.';
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -18,49 +29,48 @@ export const metadata: Metadata = {
     template: APP_TITLE_TEMPLATE,
   },
   description: APP_DESCRIPTION,
-  manifest: "/manifest.json",
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: 'default',
     title: APP_DEFAULT_TITLE,
-    // startUpImage: [],
   },
   formatDetection: {
     telephone: false,
   },
-  keywords: "calendar, AI scheduling, time management, productivity, smart calendar",
-  authors: [{ name: "Xroden Tech" }],
-  creator: "Xroden Tech",
-  publisher: "Abhishek Sharma",
-  category: "Productivity",
+  keywords: 'calendar, AI scheduling, time management, productivity, smart calendar',
+  authors: [{ name: 'Xroden Tech' }],
+  creator: 'Xroden Tech',
+  publisher: 'Abhishek Sharma',
+  category: 'Productivity',
   openGraph: {
-    type: "website",
+    type: 'website',
     siteName: APP_NAME,
     title: {
       default: APP_DEFAULT_TITLE,
       template: APP_TITLE_TEMPLATE,
     },
     description: APP_DESCRIPTION,
-    url: "https://kalendarapp.vercel.app",
+    url: 'https://kalendarapp.vercel.app',
     images: [
       {
-        url: "/kalendar-header.png",
+        url: '/kalendar-header.png',
         width: 1200,
         height: 630,
-        alt: "Kalendar App Screenshot",
+        alt: 'Kalendar App Screenshot',
       },
     ],
-    locale: "en_US",
+    locale: 'en_US',
   },
   twitter: {
-    card: "summary",
+    card: 'summary',
     title: {
       default: APP_DEFAULT_TITLE,
       template: APP_TITLE_TEMPLATE,
     },
     description: APP_DESCRIPTION,
-    images: ["/kalendar-header.png"],
-    creator: "@xrodentech",
+    images: ['/kalendar-header.png'],
+    creator: '@xrodentech',
   },
   robots: {
     index: true,
@@ -68,20 +78,22 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
   },
 };
-export const dynamic = 'force-dynamic'
+
+export const dynamic = 'force-dynamic';
+
 export const viewport: Viewport = {
-  themeColor: "#FFFFFF",
+  themeColor: '#FFFFFF',
   width: 'device-width',
   initialScale: 1,
 };
@@ -93,7 +105,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark overflow-x-hidden scrollbar-hide">
-      <body className={inter.className}><Providers>{children}<Toaster /></Providers></body>
+      <body className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}>
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
+      </body>
     </html>
   );
 }

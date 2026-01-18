@@ -1,124 +1,26 @@
-// src/lib/server/appwrite.js
-"use server";
-import { Client, Account, Databases, Query, ID } from "node-appwrite";
-import { cookies } from "next/headers";
+import { Client, Databases, Query, ID } from 'node-appwrite';
 
-export async function createSessionClient() {
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-    .setProject(process.env.APPWRITE_PROJECT_ID!);
+const APPWRITE_ENDPOINT = process.env.APPWRITE_ENDPOINT!;
+const APPWRITE_PROJECT_ID = process.env.APPWRITE_PROJECT_ID!;
+const APPWRITE_KEY = process.env.APPWRITE_KEY!;
+const APPWRITE_DATABASE_ID = process.env.APPWRITE_DATABASE_ID!;
 
-  const session = cookies().get("user-session");
-  if (!session || !session.value) {
-    throw new Error("No session");
-  }
-
-  client.setSession(session.value);
-
-  return {
-    get account() {
-      return new Account(client);
-    },
-  };
+/**
+ * Creates an Appwrite admin client for server-side operations.
+ */
+function createAdminClient(): Client {
+  return new Client()
+    .setEndpoint(APPWRITE_ENDPOINT)
+    .setProject(APPWRITE_PROJECT_ID)
+    .setKey(APPWRITE_KEY);
 }
 
-export async function createAdminClient() {
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-    .setProject(process.env.APPWRITE_PROJECT_ID!)
-    .setKey(process.env.APPWRITE_KEY!);
-
-  return {
-    get account() {
-      return new Account(client);
-    },
-  };
+/**
+ * Gets the Appwrite Databases service.
+ */
+export function getDatabase(): Databases {
+  const client = createAdminClient();
+  return new Databases(client);
 }
 
-export async function getLoggedInUser() {
-  try {
-    const { account } = await createSessionClient();
-    return await account.get();
-  } catch (error) {
-    return null;
-  }
-}
-export async function storeTokens(userId: string, accessToken: string, refreshToken: string) {
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-    .setProject(process.env.APPWRITE_PROJECT_ID!)
-    .setKey(process.env.APPWRITE_KEY!);
-
-  const databases = new Databases(client);
-
-  try {
-    // Check if a token already exists for this user
-    const existingTokens = await databases.listDocuments(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_COLLECTION_ID!,
-      [Query.equal('userId', userId)]
-    );
-
-    if (existingTokens.documents.length > 0) {
-      // Update existing token
-      await databases.updateDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_COLLECTION_ID!,
-        existingTokens.documents[0].$id,
-        {
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          updatedAt: new Date().toISOString()
-        }
-      );
-    } else {
-      // Create new token document
-      await databases.createDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_COLLECTION_ID!,
-        ID.unique(),
-        {
-          userId: userId,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      );
-    }
-
-    console.log('Access token stored successfully');
-  } catch (error) {
-    console.error('Error storing access token:', error);
-    throw error;
-  }
-}
-
-export async function getTokens(userId: string) {
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-    .setProject(process.env.APPWRITE_PROJECT_ID!)
-    .setKey(process.env.APPWRITE_KEY!);
-
-  const databases = new Databases(client);
-
-  try {
-    const tokens = await databases.listDocuments(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_COLLECTION_ID!,
-      [Query.equal('userId', userId)]
-    );
-
-    if (tokens.documents.length > 0) {
-      return {
-        accessToken: tokens.documents[0].accessToken,
-        refreshToken: tokens.documents[0].refreshToken
-      };
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error('Error retrieving access token:', error);
-    throw error;
-  }
-}
+export { Query, ID };

@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss"
-const {nextui} = require("@nextui-org/react");
+const { nextui } = require("@nextui-org/react");
 const {
   default: flattenColorPalette,
 } = require("tailwindcss/lib/util/flattenColorPalette");
@@ -12,7 +12,7 @@ const config = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
-	],
+  ],
   prefix: "",
   theme: {
     container: {
@@ -24,6 +24,8 @@ const config = {
     },
     extend: {
       fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-dm-sans)', 'var(--font-inter)', 'sans-serif'],
         poppins: ['"Poppins"', 'sans-serif'],
       },
       boxShadow: {
@@ -89,7 +91,7 @@ const config = {
         'infinite-scroll': {
           from: { transform: 'translateX(0)' },
           to: { transform: 'translateX(-100%)' },
-        },  
+        },
         gradient: {
           to: {
             backgroundPosition: "var(--bg-size) 0",
@@ -115,7 +117,7 @@ function addVariablesForColors({ addBase, theme }: any) {
   let newVars = Object.fromEntries(
     Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
   );
- 
+
   addBase({
     ":root": newVars,
   });

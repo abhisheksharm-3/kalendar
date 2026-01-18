@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import OptimizedSchedule from './OptimizedSchedule';
 import { RiCalendarLine } from '@remixicon/react';
 import axios, { AxiosError } from 'axios';
-import { Schedule } from '@/lib/types';
+import type { ScheduleResponseType } from '@/lib/types';
 import { toast } from 'sonner';
 
 const scheduleRequestSchema = z.object({
@@ -60,30 +60,19 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
     setSchedule(null);
   };
 
-  const implementSchedule = async (schedule: Schedule) => {
+  const implementSchedule = async (schedule: ScheduleResponseType) => {
     if (schedule.schedule) {
-      console.log('Implementing schedule:', schedule.schedule);
-  
+
       for (const event of schedule.schedule) {
         try {
           // First, try to update the event
           await axios.put<void>('/api/calendar/events/update', event);
-          toast.success(`Event "${event.summary}" has been updated.`, {
-            action: {
-              label: 'View',
-              onClick: () => console.log("Success"),
-            }
-          });
+          toast.success(`Event "${event.summary}" has been updated.`);
         } catch (error) {
           if (axios.isAxiosError(error) && error.response?.status === 500) {
             try {
               await axios.post<void>('/api/calendar/events/create', event);
-              toast.success(`Event "${event.summary}" has been created.`, {
-                action: {
-                  label: 'View',
-                  onClick: () => console.log("Success"),
-                }
-              });
+              toast.success(`Event "${event.summary}" has been created.`);
             } catch (createError) {
               handleEventError(createError, event, 'creating');
             }
@@ -98,19 +87,9 @@ const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onOpenChange,
   const handleEventError = (error: unknown, event: any, action: string) => {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
-      toast.error(`Error ${action} event "${event.summary}": ${axiosError.message}`, {
-        action: {
-          label: 'Dismiss',
-          onClick: () => console.log("Dismiss"),
-        }
-      });
+      toast.error(`Error ${action} event "${event.summary}": ${axiosError.message}`);
     } else {
-      toast.error(`Unexpected error ${action} event "${event.summary}": ${error}`, {
-        action: {
-          label: 'Dismiss',
-          onClick: () => console.log("error"),
-        }
-      });
+      toast.error(`Unexpected error ${action} event "${event.summary}"`);
     }
   };
 

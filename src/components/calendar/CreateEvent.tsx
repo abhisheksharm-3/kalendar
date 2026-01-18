@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Event } from '@/lib/types';
+import type { EventType } from '@/lib/types';
 
 const eventSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -29,12 +29,12 @@ type EventFormData = z.infer<typeof eventSchema>;
 interface EventCreationModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateEvent: (event: any) => Promise<Event>;
+  onCreateEvent: (event: Partial<EventType>) => Promise<EventType>;
 }
 
 const EventCreationModal: React.FC<EventCreationModalProps> = ({ isOpen, onOpenChange, onCreateEvent }) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  
+
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
@@ -52,8 +52,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({ isOpen, onOpenC
     const newEvent = {
       summary: data.title,
       description: data.description,
-      start: { dateTime: new Date(data.start).toISOString() },
-      end: { dateTime: new Date(data.end).toISOString() },
+      start: { dateTime: new Date(data.start).toISOString(), timeZone: 'Asia/Kolkata' },
+      end: { dateTime: new Date(data.end).toISOString(), timeZone: 'Asia/Kolkata' },
       recurrence: data.recurrence !== 'none' ? [`RRULE:${data.recurrence}`] : undefined,
       reminders: {
         useDefault: data.useDefaultReminder,

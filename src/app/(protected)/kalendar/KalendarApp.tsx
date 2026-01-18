@@ -1,34 +1,48 @@
-"use client";
-import React, { useState } from 'react';
-import { useCalendar } from '@/hooks/useCalendar';
+'use client';
+
+import React, { useState, useCallback } from 'react';
+import { useCalendar, useEvents } from '@/hooks';
 import CalendarLayout from '@/components/calendar/CalendarLayout';
 import { CalendarHeader } from '@/components/calendar/CalendarHeader';
 import { CalendarContent } from '@/components/calendar/CalendarContent';
 import { MobileSidebar } from '@/components/calendar/MobileSidebar';
 import EventCreationModal from '@/components/calendar/CreateEvent';
 import AIScheduleModal from '@/components/calendar/AIScheduleModal';
-import { useEvents } from '@/hooks/useEvents';
 import LoadingState from '@/components/calendar/LoadingState';
-import FailureComponent from '@/components/calendar/FailiureComponent';
+import FailureComponent from '@/components/calendar/FailureState';
+import type { UserPreferencesType } from '@/lib/types';
 
-const KalendarApp: React.FC = () => {
+interface ScheduleRequestType {
+  date: string;
+  comments?: string;
+}
+
+const DEFAULT_USER_PREFERENCES: UserPreferencesType = {
+  workStartTime: '09:00',
+  workEndTime: '17:00',
+  preferredMeetingDuration: 30,
+  focusTimeBlocks: 2,
+  lunchTime: '12:00',
+  breakFrequency: 90,
+};
+
+export default function KalendarApp() {
   const { date, view, goToToday, goToPrevious, goToNext, setDate, setView } = useCalendar();
   const { events, isLoading, error, createEvent, updateEvent, refetchEvents } = useEvents();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isAIScheduleModalOpen, setIsAIScheduleModalOpen] = useState(false);
 
-  const handleRequestSchedule = async (data: { date: string, comments?: string }) => {
-    try {
+  const handleRequestSchedule = useCallback(
+    async (data: ScheduleRequestType) => {
       const response = await fetch('/api/ai/schedule', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
           events,
-          userPreferences: {} // You might want to fetch user preferences from somewhere
+          userPreferences: DEFAULT_USER_PREFERENCES,
         }),
       });
 
@@ -36,12 +50,15 @@ const KalendarApp: React.FC = () => {
         throw new Error('Failed to get AI schedule');
       }
 
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting AI schedule:', error);
-      // Handle error (e.g., show an error message to the user)
-    }
-  };
+      return response.json();
+    },
+    [events]
+  );
+
+  const handleOpenSidebar = useCallback(() => setIsSidebarOpen(true), []);
+  const handleCloseSidebar = useCallback(() => setIsSidebarOpen(false), []);
+  const handleOpenEventModal = useCallback(() => setIsEventModalOpen(true), []);
+  const handleOpenAIModal = useCallback(() => setIsAIScheduleModalOpen(true), []);
 
   if (isLoading) {
     return <LoadingState />;
@@ -61,19 +78,14 @@ const KalendarApp: React.FC = () => {
         onPrevious={goToPrevious}
         onNext={goToNext}
         onToday={goToToday}
-        onOpenSidebar={() => setIsSidebarOpen(true)}
-        onOpenEventModal={() => setIsEventModalOpen(true)}
-        onOpenAIScheduleModal={() => setIsAIScheduleModalOpen(true)}
+        onOpenSidebar={handleOpenSidebar}
+        onOpenEventModal={handleOpenEventModal}
+        onOpenAIScheduleModal={handleOpenAIModal}
       />
-      <CalendarContent
-        date={date}
-        view={view}
-        events={events}
-        onEventUpdate={updateEvent}
-      />
+      <CalendarContent date={date} view={view} events={events} onEventUpdate={updateEvent} />
       <MobileSidebar
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={handleCloseSidebar}
         date={date}
         setDate={setDate}
         events={events}
@@ -90,6 +102,4 @@ const KalendarApp: React.FC = () => {
       />
     </CalendarLayout>
   );
-};
-
-export default KalendarApp;
+}
